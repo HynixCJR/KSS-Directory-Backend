@@ -23,8 +23,10 @@ class openAnce():
     def date(date):
         """Returns the announcement JSON file at the specified date. If there is none, the function returns 'none'."""
         try:
+            print("announcements/" + date + ".json")
             anceData = open("announcements/" + date + ".json", "r+")
-            ance = anceData.read(encoding='utf-8')
+            print(anceData)
+            ance = anceData.read()
             return json.loads(ance)
         except:
             return "none"
@@ -142,11 +144,12 @@ def get_specific_club_repo_info(club_URL:str):
     Listed status does not affect whether the page can be returned or not.'''
     try:
         for i in os.listdir("club_info_pages"):
-            for k in os.listdir("club_info_pages/" + i):
-                club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k +  "/" + k + ".json", "r+")
-                club_repo_info = json.loads(club_repo_info_raw_file.read())
-                if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                    return club_repo_info
+            if i != ".keep":
+                for k in os.listdir("club_info_pages/" + i):
+                    club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k +  "/" + k + ".json", "r+")
+                    club_repo_info = json.loads(club_repo_info_raw_file.read())
+                    if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+                        return club_repo_info
         else:
             return "none"
     except:
@@ -158,11 +161,12 @@ def get_club_repo_main():
     This runs on build time for the landing club repo page.'''
     returned_list = []
     for i in os.listdir("club_info_pages"):
-        for k in os.listdir("club_info_pages/" + i):
-            club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
-            club_repo_info = json.loads(club_repo_info_raw_file.read())
-            if club_repo_info["Metadata"]["Published"].lower() == "yes":
-                returned_list.append({"URL": club_repo_info["Metadata"]["URL"], "Content": club_repo_info})
+        if i != ".keep":
+            for k in os.listdir("club_info_pages/" + i):
+                club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
+                club_repo_info = json.loads(club_repo_info_raw_file.read())
+                if club_repo_info["Metadata"]["Published"].lower() == "yes":
+                    returned_list.append({"URL": club_repo_info["Metadata"]["URL"], "Content": club_repo_info})
     return returned_list
 
 @app.get("/club_repo_list")
@@ -173,21 +177,22 @@ def get_club_repo_list():
     try:
         returned_file = {}
         for i in os.listdir("club_info_pages"):
-            for k in os.listdir("club_info_pages/" + i):
-                club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
-                club_repo_info = json.loads(club_repo_info_raw_file.read())
-                if club_repo_info["Metadata"]["Published"].lower() == "yes":
-                    if club_repo_info["Metadata"]["Category"] not in returned_file:
-                        returned_file[club_repo_info["Metadata"]["Category"]] = {
-                            club_repo_info["Metadata"]["Club_Name"]: {
+            if i != ".keep":
+                for k in os.listdir("club_info_pages/" + i):
+                    club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
+                    club_repo_info = json.loads(club_repo_info_raw_file.read())
+                    if club_repo_info["Metadata"]["Published"].lower() == "yes":
+                        if club_repo_info["Metadata"]["Category"] not in returned_file:
+                            returned_file[club_repo_info["Metadata"]["Category"]] = {
+                                club_repo_info["Metadata"]["Club_Name"]: {
+                                    "Club_Name": club_repo_info["Metadata"]["Club_Name"],
+                                    "URL": club_repo_info["Metadata"]["URL"],
+                                    "Listed": club_repo_info["Metadata"]["Listed"]}}
+                        else:
+                            returned_file[club_repo_info["Metadata"]["Category"]][club_repo_info["Metadata"]["Club_Name"]] = {
                                 "Club_Name": club_repo_info["Metadata"]["Club_Name"],
                                 "URL": club_repo_info["Metadata"]["URL"],
-                                "Listed": club_repo_info["Metadata"]["Listed"]}}
-                    else:
-                        returned_file[club_repo_info["Metadata"]["Category"]][club_repo_info["Metadata"]["Club_Name"]] = {
-                            "Club_Name": club_repo_info["Metadata"]["Club_Name"],
-                            "URL": club_repo_info["Metadata"]["URL"],
-                            "Listed": club_repo_info["Metadata"]["Listed"]}
+                                "Listed": club_repo_info["Metadata"]["Listed"]}
         return returned_file
     except:
         return "none"
@@ -197,12 +202,13 @@ def retrieve_specific_club_images(club_URL: str, image_file_name):
     '''retrieves a single image from within the club_info_pages directory, if they are available.'''
     try:
         for i in os.listdir("club_info_pages"):
-            for k in os.listdir("club_info_pages/" + i):
-                club_repo_info_raw_file = open("club_info_pages/" + i.replace(" ", "_") + "/" + k.replace(" ", "_").lower() +  "/" + k.replace(" ", "_").lower() + ".json", "r+")
-                club_repo_info = json.loads(club_repo_info_raw_file.read())
-                if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                    
-                    return "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["Club_Name"].replace(" ", "_").lower() + "/" + image_file_name + ".png"
+            if i != ".keep":
+                for k in os.listdir("club_info_pages/" + i):
+                    club_repo_info_raw_file = open("club_info_pages/" + i.replace(" ", "_") + "/" + k.replace(" ", "_").lower() +  "/" + k.replace(" ", "_").lower() + ".json", "r+")
+                    club_repo_info = json.loads(club_repo_info_raw_file.read())
+                    if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+                        
+                        return "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["Club_Name"].replace(" ", "_").lower() + "/" + image_file_name + ".png"
         else:
             return "none"
     except:

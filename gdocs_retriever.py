@@ -880,19 +880,20 @@ def main_function():
             scrape_doc(full_doc, doc_images, i['id'])
             for path in os.listdir("club_info_pages"):
                 # iterate through the club_info_pages dir to get each folder
-                for file in os.listdir("club_info_pages/" + path):
-                    # iterate through each folder in the club_info_pages folder
-                    remove_file = True
-                    for index, current_file in current_docs.items():
-                        # iterate through the current_docs dict and see if the file currently in the local directory is in the retrieved files.
-                        # if not, then keep remove_file as True, and thus remove the file from the current local directory.
-                        if "club_info_pages/" + path + "/" + file == current_file[1]:
-                            remove_file = False
-                            break
-                    if remove_file == True:
-                        print("removing file at club_info_pages/" + path + "/" + file)
-                        # os.remove("club_info_pages/" + path + "/" + file)
-                        # this line doesn't work when I run on Windows, so I'm just gonna pray it works on the linux server.
+                if path != ".keep":
+                    for file in os.listdir("club_info_pages/" + path):
+                        # iterate through each folder in the club_info_pages folder
+                        remove_file = True
+                        for index, current_file in current_docs.items():
+                            # iterate through the current_docs dict and see if the file currently in the local directory is in the retrieved files.
+                            # if not, then keep remove_file as True, and thus remove the file from the current local directory.
+                            if "club_info_pages/" + path + "/" + file == current_file[1]:
+                                remove_file = False
+                                break
+                        if remove_file == True:
+                            print("removing file at club_info_pages/" + path + "/" + file)
+                            # os.remove("club_info_pages/" + path + "/" + file)
+                            # this line doesn't work when I run on Windows, so I'm just gonna pray it works on the linux server.
             
             print("|-----------------|\nA Google Docs retrieval was completed.\n" + "-> Doc name: " + i['name'] + "\n-> File ID: " + i['id'] + "\n-> Last modified time: " + i['modifiedTime'])
             files_updated += 1
