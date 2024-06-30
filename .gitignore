@@ -2,7 +2,6 @@ announcements/*
 __pycache__/
 .env.secret
 club_info_pages/*
-pings.json
 api_credentials/docs/credentials.json
 api_credentials/drive/credentials.json
 gdocs_retriever_config.json
