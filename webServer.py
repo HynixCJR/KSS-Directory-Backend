@@ -97,15 +97,14 @@ def anceTotal(year: str, month: str):
 # Does not accept spaces, so spaces have to be changed to "$"
 def getClubInfo(club: str):
     # Gets the info of a specific club/event, returns as dictionary
+    clubInfoRawFile = open("clubInfo.json", "r+")
+    clubInfoRaw = json.loads(clubInfoRawFile.read())
+    clubInfoProcessed = {}
+    print("0:", clubInfoRaw)
     try:
-        clubInfoRawFile = open("clubInfo.json", "r+")
-        clubInfoRaw = json.loads(clubInfoRawFile.read())
-        clubInfoProcessed = {}
-        print("0:", clubInfoRaw)
-        
         for clubKey, clubValue in clubInfoRaw.items():
             keyList = ast.literal_eval(clubKey)
-            if keyList[0] == club:
+            if keyList[0] == club.replace("$", " "):
                 if keyList[1] == "Socials":
                     socialsList = []
                     previousIter = 0
@@ -124,7 +123,7 @@ def getClubInfo(club: str):
 
         clubColourData = open("pings.json", "r+")
         for clubColourKey, clubColourValue in json.loads(clubColourData.read()).items():
-            if clubColourValue[0] == club:
+            if clubColourValue[0] == club.replace("$", " "):
                 print("2:", clubColourValue)
                 clubInfoProcessed["Colour"] = clubColourValue[2]
                 break
