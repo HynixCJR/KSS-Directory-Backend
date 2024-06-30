@@ -8,6 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from dotenv import dotenv_values
 
 import requests
 from time import gmtime, strftime
@@ -15,6 +16,7 @@ import schedule
 import time
 
 SCOPES_docs = ['https://www.googleapis.com/auth/documents.readonly']
+
 
 def docs(doc_id):
     """Shows basic usage of the Docs API.
@@ -64,11 +66,9 @@ def main_function():
     # If modifying these scopes, delete the file token.json.
     SCOPES_drive = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
-    # opens the config file for the gdocs retriever
-    config_file = open("gdocs_retriever_config.json", "r+")
-    config_file_dict = json.loads(config_file.read())
-    permitted_drive_folder_id = config_file_dict['permitted_drive_folder_id']
-
+    # Load existing variables from the .env.shared file
+    env_vars_shared = dotenv_values('.env.shared')
+    permitted_drive_folder_id = env_vars_shared['permitted_drive_folder_id']
 
     def latest_date(date1, date2):
         '''Returns the latest date of the two that are inputted.'''
@@ -872,7 +872,7 @@ def main_function():
     files_updated = 0
     for i in items_under_permitted_folder:
 
-        if latest_date(i["modifiedTime"][0:16], config_file_dict['last_retrieved_time']) != config_file_dict['last_retrieved_time']:
+        if latest_date(i["modifiedTime"][0:16], env_vars_shared['last_retrieved_time']) != env_vars_shared['last_retrieved_time']:
             # if the doc was last edited after the docs were last retrieved, then retrieve the doc again.
             full_doc_and_imgs = docs(i['id'])
             full_doc = full_doc_and_imgs[0]["content"][1:]
@@ -893,25 +893,23 @@ def main_function():
                         print("removing file at club_info_pages/" + path + "/" + file)
                         # os.remove("club_info_pages/" + path + "/" + file)
                         # this line doesn't work when I run on Windows, so I'm just gonna pray it works on the linux server.
-                        
-
-            # not os.path.exists
-            # current_docs
             
             print("|-----------------|\nA Google Docs retrieval was completed.\n" + "-> Doc name: " + i['name'] + "\n-> File ID: " + i['id'] + "\n-> Last modified time: " + i['modifiedTime'])
             files_updated += 1
 
     print("|-----------------|\nGoogle Drive Retrieval Completed at server time of " + strftime("%Y-%m-%dT%H:%M", gmtime()) + ", with " + str(files_updated) + " file(s) updated.")
 
+    with open('.env.shared', 'w') as env_vars:
+        # removing everything in the .env.shared file
+        env_vars.write("")
+
     # set last_retrieved_time to the current time
-    config_file_dict['last_retrieved_time'] = strftime("%Y-%m-%dT%H:%M", gmtime())
-    # removes all stuff in json from 0th position
-    config_file.truncate(0)
-    # moves cursor back to 0th position
-    config_file.seek(0)
-    # json.dumps changes config_file_dict to str
-    config_file.write(json.dumps(config_file_dict))
-    config_file.flush()
+    env_vars_shared["last_retrieved_time"] = strftime("%Y-%m-%dT%H:%M", gmtime())
+
+    for key, value in env_vars_shared.items():
+        # add everything new that is in env_vars_shared to the now empty .env.shared file.
+        with open('.env.shared', 'a') as env_vars:
+            env_vars.write(f"{key}={value}\n")
 
 main_function()
 # run the function once for diagnostic purposes.
