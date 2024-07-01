@@ -20,15 +20,19 @@ Use this section to navigate through the documentation.
 
 # General Maintainer Documentation
 This section will be updated later. For now, see [the Google Docs version](https://docs.google.com/document/d/1ngnna95KSxb0117wMao7gFBE8yUne6eFYDhBZlVmU-s/edit)
-1. [Assigning club role names](###assigning-club-role-names)
-    - [How to assign club role names](####How-to-assign-club-role-names)
-    - [Checking current club role names](####Checking-current-club-role-names)
-3. [Adding club details](###adding-club-details)
-    - [Adding club social media links](####adding=club-social-media-links)
-5. [Adding Announcements](###Adding-announcements)
+1. [Assigning club role names](#assigning-club-role-names)
+    - [How to assign club role names](#How-to-assign-club-role-names)
+    - [Checking current club role names](#Checking-current-club-role-names)
+3. [Adding club details](#adding-club-details)
+    - [Adding club social media links](#adding=club-social-media-links)
+5. [Adding Announcements](#Adding-announcements)
 
-### Assigning Club Role Names
-#### How to assign club role names
+## Assigning Club Role Names
+### How to assign club role names
+Before you add an announcement, it is highly recommended that you assign a specific name to each club/event first, assuming one has not already been added. These names are what show up on the [website](https://kss.directory) instead of the role on Discord.
+
+Assigning a name to the club/event before you send an announcement is very important, as an announcement cannot be edited after it has been sent already. In other words, the announcement in the second image above would remain that way (unless it were deleted), even if the role was assigned after the fact. Because of this importance, it is recommended that role names are assigned as soon as a new role is added to the Discord server.
+
 
 
 # Installation and Project Structure
