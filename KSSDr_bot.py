@@ -12,7 +12,7 @@ from dotenv import dotenv_values
 import random as r
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = True
+debug_mode = False
 
 # Opening the pings.json file
 pingsFile = open("pings.json", "r+")
