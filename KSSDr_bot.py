@@ -432,11 +432,11 @@ async def on_message(message):
 try:
     # Load existing variables from the .env.secret file
     env_vars_secret = dotenv_values('.env.secret')
-    clientKey = env_vars_secret['local_key' if debug_mode else 'public_key']
-    # if testing locally, switch 'public_key' to 'local_key' in the above.
+    clientKey = env_vars_secret['local_token' if debug_mode else 'public_token']
+    # if testing locally, switch 'public_token' to 'local_token' in the above.
     # this makes the bot run in the test Discord server, rather than the public KSS Directory server.
 except:
     # if the file doesn't exist, prompt user to make one
-    print("Error: No .env.secret file found! Please create one and ensure that the 'public_key' or 'local_key' variables are present.")
+    print("Error: No .env.secret file found! Please create one and ensure that the 'public_token' or 'local_token' variables are present.")
 
 client.run(clientKey)
