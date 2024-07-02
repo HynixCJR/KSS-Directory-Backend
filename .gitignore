@@ -1,4 +1,4 @@
-announcements/*
+announcements/*.json
 __pycache__/
 .env.secret
 club_info_pages/*

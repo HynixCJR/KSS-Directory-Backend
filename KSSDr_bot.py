@@ -11,6 +11,9 @@ import ast
 from dotenv import dotenv_values
 import random as r
 
+# Enable debug mode (Uses seperate bot in testing server)
+debug_mode = True
+
 # Opening the pings.json file
 pingsFile = open("pings.json", "r+")
 pings = json.loads(pingsFile.read())
@@ -25,7 +28,7 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 # Load existing variables from the .env.shared file
-env_vars_shared = dotenv_values('.env.shared')
+env_vars_shared = dotenv_values('.env.shared.debug' if debug_mode else '.env.shared')
 
 # global variables
 formattedDate = ""
@@ -82,8 +85,7 @@ async def on_ready():
 async def on_message(message):
     """This function activates if a new message is sent."""
 
-    print(type(message.channel.id))
-    print(type(env_vars_shared['anceChnl']))
+    print("New message in channel with ID " + str(message.channel.id))
 
     global formattedDate, anceNum
     if message.author == client.user:
@@ -106,8 +108,16 @@ async def on_message(message):
             # Getting the month
             month = ""
             month, iterate = iterateSect(message.content, month, iterate, 1, " ")
-            month = json.loads(env_vars_shared['months'])[month.lower()]
-            
+            month = json.loads(env_vars_shared['months']).get(month.lower())
+            if month == None:
+                await difChannel(int(env_vars_shared['debugChnl']), "**Error!**", "There was an error with the message you sent!\n```" 
+                                 + message.content 
+                                 + "```\nThe month specified was not recognized, is it spelled and formatted correctly?\n\nThe expected format was as follows:\n```"
+                                 + "**[DAY]**\n\n**[MONTH] [DATE], [YEAR]**```\nMore details are accessible with the .help command.",  
+                                 int(env_vars_shared['negColour']))
+                await message.delete()
+                return # give up early if can't parse date
+
             # Getting the date
             date = ""
 
@@ -422,11 +432,11 @@ async def on_message(message):
 try:
     # Load existing variables from the .env.secret file
     env_vars_secret = dotenv_values('.env.secret')
-    clientKey = env_vars_secret['public_key']
+    clientKey = env_vars_secret['local_key' if debug_mode else 'public_key']
     # if testing locally, switch 'public_key' to 'local_key' in the above.
     # this makes the bot run in the test Discord server, rather than the public KSS Directory server.
 except:
     # if the file doesn't exist, prompt user to make one
-    print("Error: No .env.secret file found! Please create one and ensure that the 'public_key' or 'private_key' variables are present.")
+    print("Error: No .env.secret file found! Please create one and ensure that the 'public_key' or 'local_key' variables are present.")
 
 client.run(clientKey)
