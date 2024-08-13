@@ -170,16 +170,26 @@ def main_function():
     # the current docs folder dict is used so that i can check if certain docs have been removed.
     # it follows the format {doc_id: [<discord_tag>, file_path]}
 
-    with open("gdocs_retriever_access_data.json", "r+") as access_data_file: 
-        access_data = json.load(access_data_file)
-        new_access_time_data = {}
+    access_data = {}
+    new_access_time_data = {}
+    # ensure file exists, create if it doesn't
+    if not os.path.isfile("gdocs_retriever_access_data.json"):
+        access_data_file = open("gdocs_retriever_access_data.json", "a")
+        access_data_file.close()
+    else:
+        try:
+            with open("gdocs_retriever_access_data.json", "r") as access_data_file: 
+                access_data = json.load(access_data_file)   
+        except:
+            print("Error opening access data file.")
 
-        if "force_gdocs_refresh" not in access_data:
-            access_data["force_gdocs_refresh"] = False
-        if "previousModifiedTimes" not in access_data or access_data["force_gdocs_refresh"] == True:
-            access_data["previousModifiedTimes"] = {}
-        if "last_retrieved_time" not in access_data:
-            access_data["last_retrieved_time"] = "none"
+    # ensure default values for all keys exist if the need arises
+    if "force_gdocs_refresh" not in access_data:
+        access_data["force_gdocs_refresh"] = False
+    if "previousModifiedTimes" not in access_data or access_data["force_gdocs_refresh"] == True:
+        access_data["previousModifiedTimes"] = {}
+    if "last_retrieved_time" not in access_data:
+        access_data["last_retrieved_time"] = "none"
 
     print("|=================|\nBeginning Google Drive Retrieval. Last retrieval time was: " + access_data['last_retrieved_time'])
 
