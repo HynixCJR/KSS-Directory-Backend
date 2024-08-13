@@ -170,15 +170,18 @@ def main_function():
     # the current docs folder dict is used so that i can check if certain docs have been removed.
     # it follows the format {doc_id: [<discord_tag>, file_path]}
 
-    print("|=================|\nBeginning Google Drive Retrieval. Last retrieval time was: " + env_vars_shared['last_retrieved_time'])
-
     with open("gdocs_retriever_access_data.json", "r+") as access_data_file: 
         access_data = json.load(access_data_file)
-        new_access_data = {}
-        new_access_data["previousModifiedTimes"] = {}
+        new_access_time_data = {}
 
-        if "previousModifiedTimes" not in access_data or env_vars_shared['force_gdocs_refresh'] == "True":
+        if "force_gdocs_refresh" not in access_data:
+            access_data["force_gdocs_refresh"] = False
+        if "previousModifiedTimes" not in access_data or access_data["force_gdocs_refresh"] == True:
             access_data["previousModifiedTimes"] = {}
+        if "last_retrieved_time" not in access_data:
+            access_data["last_retrieved_time"] = "none"
+
+    print("|=================|\nBeginning Google Drive Retrieval. Last retrieval time was: " + access_data['last_retrieved_time'])
 
     drive()
     files_updated = 0
@@ -202,7 +205,7 @@ def main_function():
             
             files_updated += 1
 
-        new_access_data["previousModifiedTimes"][item["name"]] = document_modified_time_formatted
+        new_access_time_data[item["name"]] = document_modified_time_formatted
 
     # for path in os.listdir("club_info_pages"):
     #     # iterate through the club_info_pages dir to get each folder
@@ -221,25 +224,34 @@ def main_function():
     #                 # os.remove("club_info_pages/" + path + "/" + file)
     #                 # this line doesn't work when I run on Windows, so I'm just gonna pray it works on the linux server.
 
+    # set last_retrieved_time to the current time
+    access_data["last_retrieved_time"] = strftime("%Y-%m-%dT%H:%M:%S", gmtime())
+    # reset refresh flag - ensure it won't do a full refresh next time
+    access_data["force_gdocs_refresh"] = False
+
     with open("gdocs_retriever_access_data.json", "r+") as access_data_file:
         access_data_file.truncate(0) # clear file
-        json.dump(new_access_data, access_data_file)
+
+        access_data["previousModifiedTimes"] = new_access_time_data # overwrite access time data
+
+        # write to now empty access data file
+        json.dump(access_data, access_data_file)
 
     print("|-----------------|\nGoogle Drive Retrieval Completed at server time of " + strftime("%Y-%m-%dT%H:%M:%S", gmtime()) + ", with " + str(files_updated) + " file(s) updated.")
 
-    with open('.env.shared', 'w+') as env_vars:
-        # removing everything in the .env.shared file
-        env_vars.write("")
+    # with open('.env.shared', 'w+') as env_vars:
+    #     # removing everything in the .env.shared file
+    #     env_vars.write("")
 
-    # set last_retrieved_time to the current time
-    env_vars_shared["last_retrieved_time"] = strftime("%Y-%m-%dT%H:%M:%S", gmtime())
-    # reset refresh flag - ensure it won't do a full refresh next time
-    env_vars_shared["force_gdocs_refresh"] = False
+    # # set last_retrieved_time to the current time
+    # env_vars_shared["last_retrieved_time"] = 
+    # # reset refresh flag - ensure it won't do a full refresh next time
+    # env_vars_shared["force_gdocs_refresh"] = False
 
-    for key, value in env_vars_shared.items():
-        # add everything new that is in env_vars_shared to the now empty .env.shared file.
-        with open('.env.shared', 'a') as env_vars:
-            env_vars.write(f"{key}={value}\n")
+    # for key, value in env_vars_shared.items():
+    #     # add everything new that is in env_vars_shared to the now empty .env.shared file.
+    #     with open('.env.shared', 'a') as env_vars:
+    #         env_vars.write(f"{key}={value}\n")
 
 main_function()
 # run the function once for diagnostic purposes.
