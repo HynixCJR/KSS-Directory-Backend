@@ -206,9 +206,12 @@ def retrieve_specific_club_images(club_URL: str, image_file_name):
                     club_repo_info_raw_file = open("club_info_pages/" + i.replace(" ", "_") + "/" + k.replace(" ", "_").lower() +  "/" + k.replace(" ", "_").lower() + ".json", "r+")
                     club_repo_info = json.loads(club_repo_info_raw_file.read())
                     if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                        
-                        return "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["Club_Name"].replace(" ", "_").lower() + "/" + image_file_name + ".png"
+                        filepath = "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["Club_Name"].replace(" ", "_").lower() + "/" + image_file_name + ".png";
+                        if os.path.isfile(filepath):
+                            return filepath;
+                        else:
+                            return "defaultLogo.png"
         else:
-            return "none"
+            return "defaultLogo.png"
     except:
-        return "none"
+        return "defaultLogo.png"
