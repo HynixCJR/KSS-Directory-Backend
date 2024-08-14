@@ -106,7 +106,7 @@ def main_function():
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     'api_credentials/drive/credentials.json', SCOPES_drive)
-                creds = flow.run_local_server(port=8080)
+                creds = flow.run_local_server(port=0)
                 # Enable offline access and incremental authorization
                 authorization_url, state = flow.authorization_url(
                     access_type='offline',
