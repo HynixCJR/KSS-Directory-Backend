@@ -10,3 +10,4 @@ gdocs_retriever_config.json
 api_credentials/drive/token.json
 api_credentials/docs/token.json
 gdocs_retriever_access_data.json
+clubCategoryInfo.json
