@@ -100,26 +100,9 @@ def getClubInfo(club: str):
     clubInfoRawFile = open("clubInfo.json", "r+")
     clubInfoRaw = json.loads(clubInfoRawFile.read())
     clubInfoProcessed = {}
-    print("0:", clubInfoRaw)
-    try:
-        for clubKey, clubValue in clubInfoRaw.items():
-            keyList = ast.literal_eval(clubKey)
-            if keyList[0] == club.replace("$", " "):
-                if keyList[1] == "Socials":
-                    socialsList = []
-                    previousIter = 0
-                    for i in range(len(clubValue)):
-                        if clubValue[i] == ",":
-                            socialsList.append(clubValue[previousIter:i])
-                            print(clubValue[previousIter:i])
-                            previousIter = i + 2
-                        elif i == len(clubValue) - 1:
-                            socialsList.append(clubValue[previousIter:i + 1])
-                    clubInfoProcessed[keyList[1]] = socialsList
-                else:
-                    clubInfoProcessed[keyList[1]] = clubValue
-
-            print("1:", keyList[0])
+    #print("0:", clubInfoRaw)
+    try:  
+        clubInfoProcessed = clubInfoRaw[club.replace("$", " ")]
 
         clubColourData = open("pings.json", "r+")
         for clubColourKey, clubColourValue in json.loads(clubColourData.read()).items():

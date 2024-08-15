@@ -7,12 +7,11 @@
 import discord
 
 import json
-import ast
 from dotenv import dotenv_values
 import random as r
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = False
+debug_mode = True
 
 # Opening the pings.json file
 pingsFile = open("pings.json", "r+")
@@ -21,6 +20,7 @@ pings = json.loads(pingsFile.read())
 # Opening the clubInfo.json file
 clubInfoFile = open("clubInfo.json", "r+")
 clubInfo = json.loads(clubInfoFile.read())
+clubInfoFile.close()
 
 # Stuff that initializes the Discord bot
 intents = discord.Intents.default()
@@ -49,9 +49,15 @@ def iterateSect(msg, mod, iter, iterEnd, endSymb):
 
     return mod, iter
 
-def retrieveClubInfo(clubPing, clubInfoType, clubInfoTypeLabel, message):
-    global clubInfo, clubInfoFile, pings
-    clubInfo.update({str([pings[clubPing][0], clubInfoTypeLabel]): message[len(clubPing) + len(clubInfoType) + 3:]})
+def saveClubInfo(clubPing, clubInfoType, clubInfoTypeLabel, message):
+    global clubInfo, pings
+
+    clubName = pings[clubPing][0]
+    if clubName not in clubInfo:
+        clubInfo[clubName] = {}
+    clubInfo[clubName].update({clubInfoTypeLabel: message[len(clubPing) + len(clubInfoType) + 3:]})
+
+    clubInfoFile = open("clubInfo.json", "r+")
 
     # removes all stuff in json from 0th position
     clubInfoFile.truncate(0)
@@ -62,6 +68,7 @@ def retrieveClubInfo(clubPing, clubInfoType, clubInfoTypeLabel, message):
     # json.dumps changes pings to str
     clubInfoFile.write(json.dumps(clubInfo))
     clubInfoFile.flush()
+    clubInfoFile.close()
     print(clubInfo)
 
 
@@ -255,7 +262,8 @@ async def on_message(message):
                 for i in json.loads(env_vars_shared['clubInfoTypes']):
                     if message.content[message.content.find(">") + 2:].startswith(i[0]):
                         if str(message.content[0:message.content.find(">") + 1]) in pings:
-                            retrieveClubInfo(str(message.content[0:message.content.find(">") + 1]), i[0][1:], i[1], message.content)
+                            saveClubInfo(str(message.content[0:message.content.find(">") + 1]), i[0][1:], i[1], message.content)
+                            await message.channel.send("Role data updated.")
                         else:
                             await difChannel(int(env_vars_shared['debugChnl']), "**Error!", "There was an error with the message you sent!\n```" + message.content + "```\nYou have not added the ping to a club/event yet, so info about the club/event cannot be added.", int(env_vars_shared['negColour']))
             
@@ -330,6 +338,7 @@ async def on_message(message):
                 pingsFile.write(json.dumps(pings))
                 pingsFile.flush()
                 print(pings)
+                await message.channel.send("Role ``" + newRoleName + "`` updated.")
 
             # error messages
             elif len(message.content) > 100:
@@ -384,33 +393,42 @@ async def on_message(message):
         elif message.content.startswith('.club info'):
             # Returns the stored club info.
 
-            if len(message.content) < 11:
+            if len(message.content) < 11: # List all clubs
                 await message.channel.send("Here is a list of the club info currently stored by this bot.")
-                for [key, value] in clubInfo.items():
-                    clubInfoKey = ast.literal_eval(key)
-                    await message.channel.send("**Name:** " + clubInfoKey[0] + ", **Type:** " + clubInfoKey[1] + ", **Details:** " + value)
+                for [clubKey, clubData] in clubInfo.items():
+                    await message.channel.send("**Name:** " + clubKey)
+                    
+                    clubDataMessage = ""
+                    for [dataType, data] in clubData.items():
+                        clubDataMessage += "> **" + dataType + ":** " + str(data) + "\n"
+                    await message.channel.send(clubDataMessage)
                 
                 await message.channel.send("...\n\nBy the way, here are the commands you can send to add or edit club/event info.")
                 
                 for i in json.loads(env_vars_shared['clubInfoTypes']):
                     await message.channel.send("<@&" + str(env_vars_shared['exampleRole']) + "> " + i[0] + " details")
-            elif len(message.content) > 30:
+            elif len(message.content) > 30: # List specific club data
                 if " " in message.content[10:]:
                     clubInfoTypesRole = message.content[10:].replace(" ", "")
                 else:
                     clubInfoTypesRole = message.content[10:]
                 try:
-                    continueTemp = False
-                    await message.channel.send("Okay, here are the details specifically for " + clubInfoTypesRole + ", otherwise known as **" + pings[clubInfoTypesRole][0] + "**:")
-                    for [key, value] in clubInfo.items():
-                        clubInfoKey = ast.literal_eval(key)
-                        if clubInfoKey[0] == pings[clubInfoTypesRole][0]:
-                            await message.channel.send("**" + clubInfoKey[1] + "**: \n> " + value)
-                            continueTemp = True
-                    if continueTemp != True:
-                        await message.channel.send("...\n\nSorry, I couldn't find any details for the role you specified. You can add some by sending the following commands:\n\n...")
+                    if clubInfoTypesRole in pings:
+                        clubName = pings[clubInfoTypesRole][0]
+                        await message.channel.send("Okay, here are the details specifically for " + clubInfoTypesRole + ", otherwise known as **" + clubName + "**:")
+
+                        if clubName in clubInfo:
+                            clubDataMessage = ""
+                            for [dataType, data] in clubInfo[clubName].items(): 
+                                clubDataMessage += "> **" + dataType + ":** " + str(data) + "\n"
+                            await message.channel.send(clubDataMessage)
+
+                            await message.channel.send("...\n\nBy the way, here are the example commands you can send to set or overwrite the club/event details.\n\n...")
+                        else:
+                            await message.channel.send("...\n\nSorry, I couldn't find any details for the role you specified. You can add some by sending the following commands:\n\n...")
                     else:
-                        await message.channel.send("...\n\nBy the way, here are the example commands you can send to set or overwrite the club/event details.\n\n...")
+                        await message.channel.send("...\n\nSorry, I couldn't find the role you specified. You can see how to create it here:\nhttps://docs.google.com/document/d/1ngnna95KSxb0117wMao7gFBE8yUne6eFYDhBZlVmU-s/edit#bookmark=id.rj0h3b2pnya6\nOnce created, you can add some data to it using the following commands:\n\n...")
+                        
                 except:
                     await message.channel.send("Sorry, there was an error! Are you sure you typed in the command correctly?")
                 
