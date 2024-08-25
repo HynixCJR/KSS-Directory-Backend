@@ -120,15 +120,20 @@ def formatClubRepoAsInfo(club_URL):
 # Does not accept spaces, so spaces have to be changed to "$"
 def getClubInfo(club: str):
     '''Gets the info of a specific club/event, returns as dictionary / json'''
-    #print("0:", clubInfoRaw)
+    clubInfoProcessed = {}
+    
     try:  
         clubInfoRaw = load_data_file("data/clubInfo.json")
-        clubInfoProcessed = {}
 
-        if club.replace("$", " ") not in clubInfoProcessed:
+        if club.replace("$", " ") not in clubInfoRaw:
             print("Requested club: '" + club.replace("$", " ") + "' was not in the database")
-        clubInfoProcessed = clubInfoRaw[club.replace("$", " ")]
-
+        else:
+            clubInfoProcessed = clubInfoRaw[club.replace("$", " ")]
+    except:
+        traceback.print_exc()
+        return "none"
+    
+    try:
         pingID = ""
         clubColour = 0
 
@@ -141,12 +146,12 @@ def getClubInfo(club: str):
                 break
 
         # Check if we have a club repo entry, if we do, overwrite clubInfoProcessed
-        for categoryName, category in get_club_repo_list_data().items():
-            for clubName, clubData in category.items():
-                print(clubData["Tag"])
-                if clubData["Tag"] == pingID:
-                    clubInfoProcessed = formatClubRepoAsInfo(clubData["URL"])
-                    break
+        # for categoryName, category in get_club_repo_list_data().items():
+        #     for clubName, clubData in category.items():
+        #         print(clubData["Tag"])
+        #         if clubData["Tag"] == pingID:
+        #             clubInfoProcessed = formatClubRepoAsInfo(clubData["URL"])
+        #             break
         
         clubInfoProcessed["Colour"] = clubColour
 
