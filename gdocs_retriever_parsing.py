@@ -5,6 +5,8 @@ import os
 import json
 import requests
 
+from FileHelper import *
+
 def retrieve_and_save_img(img_url:str, img_file_name:str, img_file_path:str):
     '''saves an image from a link, with the given file name and path'''
     if not os.path.exists(img_file_path):
@@ -354,7 +356,8 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
     '''the full doc scraping function'''
 
     club_discord_tag = ""
-    club_file_path = ""
+    club_directory_path = ""
+    club_url = ""
 
     club_data = {}
 
@@ -393,9 +396,14 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                                 club_data["Metadata"]["Published"] = table_row_second_cell
                             else:
                                 break
+                        
+                        # handle missing category
+                        if club_data["Metadata"]["Category"] == "":
+                            club_data["Metadata"]["Category"] = "other_clubs"
 
                         club_discord_tag = club_data["Metadata"]["Tag"].replace("\n", "").replace(" ", "")
-                        club_file_path = "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower()
+                        club_url = club_data["Metadata"]["URL"].replace(" ", "_")
+                        club_directory_path = "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["URL"].replace(" ", "_").lower()
             
             elif line["paragraph"]["elements"][0]["textRun"]["content"] == "Basic Info":
                 # detects when the Basic Info section is reached.
@@ -572,9 +580,9 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                 if "Images" not in club_data:
                     club_data["Images"] = {}
 
-                if not os.path.exists("club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower()):
+                if not os.path.exists(club_directory_path):
                     # if the folder for this club doesn't already exist, this makes a new one for it.
-                    os.makedirs("club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower())
+                    os.makedirs(club_directory_path)
                 
                 for k in range(10):
                     if "table" in full_doc[index+k] and "inlineObjectElement" in full_doc[index + k]["table"]["tableRows"][0]["tableCells"][1]["content"][0]["paragraph"]["elements"][0]:
@@ -586,7 +594,7 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                         club_data["Images"][line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower()] = "Available"
                         # add a section in the dict that indicates that an image exists, which is so that the front-end knows to make another request specifically for the image
 
-                        retrieve_and_save_img(doc_images[img_uri_tag], line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower(), "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower())
+                        retrieve_and_save_img(doc_images[img_uri_tag], line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower(), club_directory_path)
 
             elif line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "") == "Current Executive Members":
                 # detects when the execs section has been reached.
@@ -677,10 +685,10 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                                             if "Images" not in club_data:
                                                 club_data["Images"] = {}
                                             img_uri_tag = table_row["tableCells"][1]["content"][0]["paragraph"]["elements"][0]["inlineObjectElement"]["inlineObjectId"]
-                                            if not os.path.exists("club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower()):
+                                            if not os.path.exists(club_directory_path):
                                                 # if the folder for this club doesn't already exist, this makes a new one for it.
-                                                os.makedirs("club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower())
-                                            retrieve_and_save_img(doc_images[img_uri_tag], "Event_" + str(event_label), "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["Club_Name"].replace(" ", "_").lower())
+                                                os.makedirs(club_directory_path)
+                                            retrieve_and_save_img(doc_images[img_uri_tag], "Event_" + str(event_label), club_directory_path)
                                             # image is retrieved and saved in the correct folder.
                                             # nothing is saved to the club_data dict because the images get sent via HTTP request regardless.
                                             club_data["Images"]["Event_" + str(event_label)] = "Available"
@@ -713,6 +721,7 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                                             #TODO: make it so that the start time can't be later than the end time.
                                             club_data["Events"][event_label][cell_header.replace(" ", "_").replace("/", "_")] = new_formatted_date
 
-    dump_to_json(club_file_path, club_data["Metadata"]["Club_Name"].replace(" ", "_").lower(), club_data)
+    #dump_to_json(club_file_path, club_data["Metadata"]["Club_Name"].replace(" ", "_").lower(), club_data)
+    dump_data_file(club_data, club_directory_path + "/" + club_data["Metadata"]["URL"].replace(" ", "_").lower() + ".json")
 
-    return [club_discord_tag, club_file_path]    
+    return club_data["Metadata"]

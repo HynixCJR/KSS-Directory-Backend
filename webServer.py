@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import ast
+from FileHelper import *
 import glob
-import os
+import os, traceback
 app = FastAPI()
 from fastapi.responses import FileResponse
 
@@ -24,11 +24,12 @@ class openAnce():
         """Returns the announcement JSON file at the specified date. If there is none, the function returns 'none'."""
         try:
             print("announcements/" + date + ".json")
-            anceData = open("announcements/" + date + ".json", "r+")
-            print(anceData)
+            anceData = open("announcements/" + date + ".json", "r")
+            #print(anceData)
             ance = anceData.read()
             return json.loads(ance)
         except:
+            traceback.print_exc()
             return "none"
 
     def batch(num, index):
@@ -41,11 +42,11 @@ class openAnce():
             if len(ances) == num:
                 break
             else:
-                anceData = open(all_ance[i-1], "r+", encoding='utf-8')
+                anceData = open(all_ance[i-1], "r", encoding='utf-8')
                 ance = json.loads(anceData.read())
-                print(type(ance))
+                #print(type(ance))
                 
-                clubColourDataRaw = json.loads(open("pings.json", "r+").read())
+                clubColourDataRaw = load_data_file("data/pings.json")
                 clubColourData = {}
                 for [key, value] in clubColourDataRaw.items():
                     clubColourData[value[0]] = value[2]
@@ -55,7 +56,7 @@ class openAnce():
                             ance[key].append(clubColourData[value[1]])
                         else:
                             ance[key].append("none")
-                print(ance)
+                #print(ance)
 
                 ances.update({len(all_ance) - i: ance})
 
@@ -91,50 +92,94 @@ def anceTotal(year: str, month: str):
         ances.append(i[14:22])
     return ances
 
+def formatClubRepoAsInfo(club_URL):
+    repoData = get_specific_club_repo_data(club_URL)
+    if repoData == "none":
+        return "none"
+    
+    clubInfo = {}
+    clubInfo["Description"] = repoData["Basic_Info"]["Description"]
+    
+    links = []
+    for k, v in repoData["Links"].items():
+        links.append(v[1])
+    if links != []:
+        clubInfo["Socials"] = links
 
+    supervisors = []
+    for supervisorID, supervisorData in repoData["Basic_Info"]["Supervisors"].items():
+        supervisors.append(supervisorData)
+    if supervisors != []:
+        clubInfo["Supervisor(s)"] = supervisors
+
+    return clubInfo
+    
+    
 
 @app.get("/clubinfo/{club}")
 # Does not accept spaces, so spaces have to be changed to "$"
 def getClubInfo(club: str):
-    # Gets the info of a specific club/event, returns as dictionary
-    clubInfoRawFile = open("clubInfo.json", "r+")
-    clubInfoRaw = json.loads(clubInfoRawFile.read())
-    clubInfoProcessed = {}
+    '''Gets the info of a specific club/event, returns as dictionary / json'''
     #print("0:", clubInfoRaw)
     try:  
+        clubInfoRaw = load_data_file("data/clubInfo.json")
+        clubInfoProcessed = {}
+
+        if club.replace("$", " ") not in clubInfoProcessed:
+            print("Requested club: '" + club.replace("$", " ") + "' was not in the database")
         clubInfoProcessed = clubInfoRaw[club.replace("$", " ")]
 
-        clubColourData = open("pings.json", "r+")
-        for clubColourKey, clubColourValue in json.loads(clubColourData.read()).items():
+        pingID = ""
+        clubColour = 0
+
+        clubColourData = load_data_file("data/pings.json")
+        for clubPingID, clubColourValue in clubColourData.items():
             if clubColourValue[0] == club.replace("$", " "):
-                print("2:", clubColourValue)
-                clubInfoProcessed["Colour"] = clubColourValue[2]
+                #print("2:", clubColourValue)
+                clubColour = clubColourValue[2]
+                pingID = clubPingID
                 break
+
+        # Check if we have a club repo entry, if we do, overwrite clubInfoProcessed
+        for categoryName, category in get_club_repo_list_data().items():
+            for clubName, clubData in category.items():
+                print(clubData["Tag"])
+                if clubData["Tag"] == pingID:
+                    clubInfoProcessed = formatClubRepoAsInfo(clubData["URL"])
+                    break
+        
+        clubInfoProcessed["Colour"] = clubColour
+
         if len(clubInfoProcessed) > 0:
-            print("3:", clubInfoProcessed)
+            #print("3:", clubInfoProcessed)
             return clubInfoProcessed
         else:
             return "none"
     except:
+        traceback.print_exc()
         return "none"
 
+def get_specific_club_repo_data(club_URL:str):
+    for i in os.listdir("club_info_pages"):
+        if i != ".keep" and os.path.isdir("club_info_pages/" + i):
+            filepath = "club_info_pages/" + i + "/" + club_URL +  "/" + club_URL + ".json"
+            if os.path.isfile(filepath):
+                club_repo_info = load_data_file(filepath)
+                if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+                    return club_repo_info
+    
+    return "none"
+
 @app.get("/specific_club_repo/{club_URL}")
-def get_specific_club_repo_info(club_URL:str):
+def get_specific_club_repo(club_URL:str):
     '''Retrieves the info for a specific club repository page.
     Images are not included; they must be retrieved from a separate get request.
     Does not return if club is not published.
     Listed status does not affect whether the page can be returned or not.'''
     try:
-        for i in os.listdir("club_info_pages"):
-            if i != ".keep":
-                for k in os.listdir("club_info_pages/" + i):
-                    club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k +  "/" + k + ".json", "r+")
-                    club_repo_info = json.loads(club_repo_info_raw_file.read())
-                    if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                        return club_repo_info
-        else:
-            return "none"
+        return get_specific_club_repo_data(club_URL)
     except:
+        traceback.print_exc()
         return "none"
 
 @app.get("/club_repo_main")
@@ -143,13 +188,24 @@ def get_club_repo_main():
     This runs on build time for the landing club repo page.'''
     returned_list = []
     for i in os.listdir("club_info_pages"):
-        if i != ".keep":
+        if i != ".keep" and os.path.isdir("club_info_pages/" + i):
             for k in os.listdir("club_info_pages/" + i):
-                club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
-                club_repo_info = json.loads(club_repo_info_raw_file.read())
-                if club_repo_info["Metadata"]["Published"].lower() == "yes":
-                    returned_list.append({"URL": club_repo_info["Metadata"]["URL"], "Content": club_repo_info})
+                returned_list.append({"Content": load_data_file("club_info_pages/" + i + "/" + k + "/" + k + ".json")})
+                # if club_repo_info["Metadata"]["Published"].lower() == "yes":
+                #     returned_list.append({"URL": club_repo_info["Metadata"]["URL"], "Content": club_repo_info})
     return returned_list
+
+def get_club_repo_list_data():
+    returned_data = {}
+    clubListData = load_data_file("club_info_pages/club_list.json")
+    for club in clubListData.values():
+        if club["Published"].lower() == "yes":
+            if club["Category"] not in returned_data:
+                returned_data[club["Category"]] = {club["Club_Name"]: club}
+            else:
+                returned_data[club["Category"]][club["Club_Name"]] = club
+
+    return returned_data
 
 @app.get("/club_repo_list")
 def get_club_repo_list():
@@ -157,44 +213,28 @@ def get_club_repo_list():
     If the club repo is set to not be published, then it won't be returned.
     If the club repo is set to not be listed, then it will be returned, along with its listed status.'''
     try:
-        returned_file = {}
-        for i in os.listdir("club_info_pages"):
-            if i != ".keep":
-                for k in os.listdir("club_info_pages/" + i):
-                    club_repo_info_raw_file = open("club_info_pages/" + i + "/" + k + "/" + k + ".json", "r+")
-                    club_repo_info = json.loads(club_repo_info_raw_file.read())
-                    if club_repo_info["Metadata"]["Published"].lower() == "yes":
-                        if club_repo_info["Metadata"]["Category"] not in returned_file:
-                            returned_file[club_repo_info["Metadata"]["Category"]] = {
-                                club_repo_info["Metadata"]["Club_Name"]: {
-                                    "Club_Name": club_repo_info["Metadata"]["Club_Name"],
-                                    "URL": club_repo_info["Metadata"]["URL"],
-                                    "Listed": club_repo_info["Metadata"]["Listed"]}}
-                        else:
-                            returned_file[club_repo_info["Metadata"]["Category"]][club_repo_info["Metadata"]["Club_Name"]] = {
-                                "Club_Name": club_repo_info["Metadata"]["Club_Name"],
-                                "URL": club_repo_info["Metadata"]["URL"],
-                                "Listed": club_repo_info["Metadata"]["Listed"]}
-        return returned_file
+        return get_club_repo_list_data()
     except:
+        traceback.print_exc()
         return "none"
 
 @app.get("/specific_club_images/{club_URL}/{image_file_name}", response_class=FileResponse)
 def retrieve_specific_club_images(club_URL: str, image_file_name):
     '''retrieves a single image from within the club_info_pages directory, if they are available.'''
+
+    defaultLogo = "data/defaultLogo.png"
+    
     try:
         for i in os.listdir("club_info_pages"):
-            if i != ".keep":
-                for k in os.listdir("club_info_pages/" + i):
-                    club_repo_info_raw_file = open("club_info_pages/" + i.replace(" ", "_") + "/" + k.replace(" ", "_").lower() +  "/" + k.replace(" ", "_").lower() + ".json", "r+")
-                    club_repo_info = json.loads(club_repo_info_raw_file.read())
+            if i != ".keep" and os.path.isdir("club_info_pages/" + i):
+                filepath = "club_info_pages/" + i + "/" + club_URL +  "/" + club_URL + ".json"
+                if os.path.isfile(filepath):
+                    club_repo_info = load_data_file(filepath)
                     if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                        filepath = "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["Club_Name"].replace(" ", "_").lower() + "/" + image_file_name + ".png";
-                        if os.path.isfile(filepath):
-                            return filepath;
-                        else:
-                            return "defaultLogo.png"
-        else:
-            return "defaultLogo.png"
+                        image_filepath = "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["URL"].replace(" ", "_").lower() + "/" + image_file_name + ".png";
+                        if os.path.isfile(image_filepath):
+                            return image_filepath;
+        return defaultLogo
     except:
-        return "defaultLogo.png"
+        traceback.print_exc()
+        return defaultLogo

@@ -1,15 +1,13 @@
 import json, random
+from FileHelper import *
 
 # put this file in the same directory as pings.json
 # colour data stored 
 
 
-pingsFile = open("pings.json", "r+")
-pings = json.loads(pingsFile.read())
+pings = load_data_file("data/pings.json")
 
-
-clubCatFile = open("clubCategoryInfo.json", "r+")
-clubCatInfo = json.loads(clubCatFile.read())
+clubCatInfo = load_data_file("data/clubCategoryInfo.json")
 
 # sets clubCatColours to a list with all the category 
 # colours available, so that there are no duplicate
@@ -32,28 +30,9 @@ for key, value in pings.items():
             else:
                 break
 
-# removes all stuff in json from 0th position
-pingsFile.truncate(0)
+dump_data_file(pings, "data/pings.json")
 
-# moves cursor back to 0th position
-pingsFile.seek(0)
-
-# json.dumps changes pings to str
-pingsFile.write(json.dumps(pings))
-pingsFile.flush()
-
-
-
-# removes all stuff in json from 0th position
-clubCatFile.truncate(0)
-
-# moves cursor back to 0th position
-clubCatFile.seek(0)
-
-# json.dumps changes pings to str
-clubCatFile.write(json.dumps(clubCatInfo))
-clubCatFile.flush()
-
+dump_data_file(clubCatInfo, "data/clubCategoryInfo.json")
 
 # # debugging purposes
 # temp_list = []

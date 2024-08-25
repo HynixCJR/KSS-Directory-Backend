@@ -10,17 +10,16 @@ import json
 from dotenv import dotenv_values
 import random as r
 
+from FileHelper import *
+
 # Enable debug mode (Uses seperate bot in testing server)
 debug_mode = False
 
 # Opening the pings.json file
-pingsFile = open("pings.json", "r+")
-pings = json.loads(pingsFile.read())
+pings = load_data_file("data/pings.json")
 
 # Opening the clubInfo.json file
-clubInfoFile = open("clubInfo.json", "r+")
-clubInfo = json.loads(clubInfoFile.read())
-clubInfoFile.close()
+clubInfo = load_data_file("data/clubInfo.json")
 
 # Stuff that initializes the Discord bot
 intents = discord.Intents.default()
@@ -57,20 +56,9 @@ def saveClubInfo(clubPing, clubInfoType, clubInfoTypeLabel, message):
         clubInfo[clubName] = {}
     clubInfo[clubName].update({clubInfoTypeLabel: message[len(clubPing) + len(clubInfoType) + 3:]})
 
-    clubInfoFile = open("clubInfo.json", "r+")
-
-    # removes all stuff in json from 0th position
-    clubInfoFile.truncate(0)
-
-    # moves cursor back to 0th position
-    clubInfoFile.seek(0)
-
-    # json.dumps changes pings to str
-    clubInfoFile.write(json.dumps(clubInfo))
-    clubInfoFile.flush()
-    clubInfoFile.close()
+    dump_data_file(clubInfo, "data/clubInfo.json")
     print(clubInfo)
-
+    
 
 async def difChannel(channel, msgTitle, msgDescription, embedColour):
     """Sends an embed message to the specified channel. This function must be called with an "await" in front of it."""
@@ -328,15 +316,16 @@ async def on_message(message):
 
                 pings.update({newRoleID: [newRoleName, newRoleSect, randomColour]})
 
-                # removes all stuff in json from 0th position
-                pingsFile.truncate(0)
+                dump_data_file(pings, "data/pings.json")
+                # # removes all stuff in json from 0th position
+                # pingsFile.truncate(0)
 
-                # moves cursor back to 0th position
-                pingsFile.seek(0)
+                # # moves cursor back to 0th position
+                # pingsFile.seek(0)
 
-                # json.dumps changes pings to str
-                pingsFile.write(json.dumps(pings))
-                pingsFile.flush()
+                # # json.dumps changes pings to str
+                # pingsFile.write(json.dumps(pings))
+                # pingsFile.flush()
                 print(pings)
                 await message.channel.send("Role ``" + newRoleName + "`` updated.")
 

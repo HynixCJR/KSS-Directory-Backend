@@ -16,9 +16,9 @@ import schedule
 import time
 
 from gdocs_retriever_parsing import scrape_doc
+from FileHelper import *
 
 SCOPES_docs = ['https://www.googleapis.com/auth/documents.readonly']
-
 
 def docs(doc_id):
     """Shows basic usage of the Docs API.
@@ -166,22 +166,14 @@ def main_function():
             print(f'An error occurred: {error}')
 
 
-    current_docs = {}
+    present_doc_ids = []
+    parsed_docs = {}
     # the current docs folder dict is used so that i can check if certain docs have been removed.
-    # it follows the format {doc_id: [<discord_tag>, file_path]}
+    # it follows the format {doc_id: { {Metadata} }}
 
-    access_data = {}
+    # safely get data. Returns an empty dictionary if an error occurs
+    access_data = load_data_file("data/gdocs_retriever_access_data.json")
     new_access_time_data = {}
-    # ensure file exists, create if it doesn't
-    if not os.path.isfile("gdocs_retriever_access_data.json"):
-        access_data_file = open("gdocs_retriever_access_data.json", "a")
-        access_data_file.close()
-    else:
-        try:
-            with open("gdocs_retriever_access_data.json", "r") as access_data_file: 
-                access_data = json.load(access_data_file)   
-        except:
-            print("Error opening access data file.")
 
     # ensure default values for all keys exist if the need arises
     if "force_gdocs_refresh" not in access_data:
@@ -192,6 +184,11 @@ def main_function():
         access_data["last_retrieved_time"] = "none"
 
     print("|=================|\nBeginning Google Drive Retrieval. Last retrieval time was: " + access_data['last_retrieved_time'])
+
+    # If a document is deleted, it's data will remain, since I'm too scared to try deleting stuff automatically
+    # However, the document won't be listed in the club info page list
+    if(access_data["force_gdocs_refresh"] == True):
+        print("A Full Data Rebuild Was Requested.")
 
     drive()
     files_updated = 0
@@ -209,13 +206,38 @@ def main_function():
             full_doc_and_imgs = docs(item['id'])
             full_doc = full_doc_and_imgs[0]["content"][1:]
             doc_images = full_doc_and_imgs[1]
-            current_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted)
+            parsed_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted)
             
             print("A Google Docs retrieval was completed.\n" + "-> Doc name: " + item['name'] + "\n-> File ID: " + item['id'] + "\n-> Last modified time: " + item['modifiedTime'])
             
             files_updated += 1
 
+        present_doc_ids.append(item["id"])
         new_access_time_data[item["name"]] = document_modified_time_formatted
+
+
+    # safely get data. Returns an empty dictionary if an error occurs
+    club_list_data = load_data_file("club_info_pages/club_list.json")
+
+    # Update ping associations with data from parsed files
+    for doc_id, parsed_doc in parsed_docs.items():
+        club_list_data[doc_id] = parsed_doc
+
+    # Clear out old ping associations from deleted documents
+    for doc_id in club_list_data.keys():
+        if not doc_id in present_doc_ids:
+            # If associated document for ping not found, remove ping association
+            club_list_data.pop(doc_id, None)
+
+    schedule_full_refresh = False
+    # Check for orphaned documents ids not in the list
+    for doc_id in present_doc_ids:
+        if not doc_id in club_list_data.keys():
+            print("A Document Without a Corresponding List Entry Was Detected, This is an Error. Scheduling a Full Data Rebuild on Next Google Drive Retrieval.")
+            schedule_full_refresh = True
+            break
+    
+    dump_data_file(club_list_data, "club_info_pages/club_list.json")
 
     # for path in os.listdir("club_info_pages"):
     #     # iterate through the club_info_pages dir to get each folder
@@ -236,16 +258,12 @@ def main_function():
 
     # set last_retrieved_time to the current time
     access_data["last_retrieved_time"] = strftime("%Y-%m-%dT%H:%M:%S", gmtime())
-    # reset refresh flag - ensure it won't do a full refresh next time
-    access_data["force_gdocs_refresh"] = False
-
-    with open("gdocs_retriever_access_data.json", "r+") as access_data_file:
-        access_data_file.truncate(0) # clear file
-
-        access_data["previousModifiedTimes"] = new_access_time_data # overwrite access time data
-
-        # write to now empty access data file
-        json.dump(access_data, access_data_file)
+    # reset refresh flag - ensure it won't do a full refresh next time (unless an error is detected and one is requested)
+    access_data["force_gdocs_refresh"] = schedule_full_refresh
+    # overwrite access time data
+    access_data["previousModifiedTimes"] = new_access_time_data 
+    # dump access data
+    dump_data_file(access_data, "data/gdocs_retriever_access_data.json")
 
     print("|-----------------|\nGoogle Drive Retrieval Completed at server time of " + strftime("%Y-%m-%dT%H:%M:%S", gmtime()) + ", with " + str(files_updated) + " file(s) updated.")
 
