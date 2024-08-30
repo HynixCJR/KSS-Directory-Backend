@@ -724,4 +724,8 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
     #dump_to_json(club_file_path, club_data["Metadata"]["Club_Name"].replace(" ", "_").lower(), club_data)
     dump_data_file(club_data, club_directory_path + "/" + club_data["Metadata"]["URL"].replace(" ", "_").lower() + ".json")
 
-    return club_data["Metadata"]
+    club_listing = {}
+    club_listing = club_data["Metadata"]
+    club_listing["Images"] = club_data["Images"]
+
+    return club_listing
