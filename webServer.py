@@ -166,13 +166,23 @@ def getClubInfo(club: str):
         return "none"
 
 def get_specific_club_repo_data(club_URL:str):
-    for i in os.listdir("club_info_pages"):
-        if i != ".keep" and os.path.isdir("club_info_pages/" + i):
-            filepath = "club_info_pages/" + i + "/" + club_URL +  "/" + club_URL + ".json"
-            if os.path.isfile(filepath):
-                club_repo_info = load_data_file(filepath)
-                if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                    return club_repo_info
+    # for i in os.listdir("club_info_pages"):
+    #     if i != ".keep" and os.path.isdir("club_info_pages/" + i):
+    #         filepath = "club_info_pages/" + i + "/" + club_URL +  "/" + club_URL + ".json"
+    #         if os.path.isfile(filepath):
+    #             club_repo_info = load_data_file(filepath)
+    #             if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+    #                 return club_repo_info
+                
+    clubListData = load_data_file("club_info_pages/club_list.json")
+    for club in clubListData.values():
+        if club["URL"] == club_URL:
+            if club["Published"].lower() == "yes":
+                filepath = "club_info_pages/" + club["Category"].replace(" ", "_").lower() + "/" + club_URL +  "/" + club_URL + ".json"
+                if os.path.isfile(filepath):
+                    club_repo_info = load_data_file(filepath)
+                    if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+                        return club_repo_info
     
     return "none"
 
