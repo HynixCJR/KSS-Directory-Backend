@@ -6,6 +6,7 @@ import glob
 import os, traceback
 app = FastAPI()
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 
 # For some reason the server wouldn't run without this code?
 origins = ["*"]
@@ -230,9 +231,10 @@ def get_club_repo_list_data():
         return val[1]["Metadata"]["Order"]
 
     returned_list.sort(key=compareCategoryOrder)
-    # print(returned_list)
+    print(returned_list)
 
-    return returned_data
+    return returned_list
+    
 
 @app.get("/club_repo_list")
 def get_club_repo_list():
