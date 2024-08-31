@@ -1,0 +1,22 @@
+{
+    "academic clubs": {
+        "Order": 0,
+        "Color": "#6485D8"
+    },
+    "arts clubs": {
+        "Order": 1,
+        "Color": "#C964D8"
+    },
+    "athletics": {
+        "Order": 2,
+        "Color": "#D86464"
+    },
+    "community clubs": {
+        "Order": 3,
+        "Color": "#64D877"
+    },
+    "other clubs": {
+        "Order": 4,
+        "Color": "#D8AA64"
+    }
+}

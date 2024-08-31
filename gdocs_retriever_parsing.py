@@ -352,7 +352,7 @@ def dump_to_json(path: str, file_name:str, content):
 
         jsonFile.flush()
 
-def scrape_doc(full_doc, doc_images, doc_modified_time):
+def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
     '''the full doc scraping function'''
 
     club_discord_tag = ""
@@ -399,7 +399,11 @@ def scrape_doc(full_doc, doc_images, doc_modified_time):
                         
                         # handle missing category
                         if club_data["Metadata"]["Category"] == "":
-                            club_data["Metadata"]["Category"] = "other_clubs"
+                            club_data["Metadata"]["Category"] = "Other Clubs"
+
+                        # handle no matching category
+                        if club_data["Metadata"]["Category"].lower() not in categories:
+                            club_data["Metadata"]["Category"] = "Other Clubs"
 
                         club_discord_tag = club_data["Metadata"]["Tag"].replace("\n", "").replace(" ", "")
                         club_url = club_data["Metadata"]["URL"].replace(" ", "_")

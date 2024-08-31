@@ -203,12 +203,34 @@ def get_club_repo_main():
 def get_club_repo_list_data():
     returned_data = {}
     clubListData = load_data_file("club_info_pages/club_list.json")
+    clubCategoryData = load_data_file("static_data/categoryInfo.json")
     for club in clubListData.values():
         if club["Published"].lower() == "yes":
             if club["Category"] not in returned_data:
-                returned_data[club["Category"]] = {club["Club_Name"]: club}
+                returned_data[club["Category"]] = {"Content": {club["Club_Name"]: club}}
+
+                # if "Metadata" not in returned_data[club["Category"]]:
+                #     returned_data[club["Category"]]["Metadata"] = {}
+
+                if club["Category"].lower() in clubCategoryData:
+                    returned_data[club["Category"]]["Metadata"] = clubCategoryData[club["Category"].lower()]
+                else: # Provide a suitable fallback
+                    returned_data[club["Category"]]["Metadata"] = {"Order": 40, "Color": "#FFFFFF"}
+                    print("Club " + club["Club_Name"] + " has invalid category: " + club["Category"])
+                
             else:
-                returned_data[club["Category"]][club["Club_Name"]] = club
+                returned_data[club["Category"]]["Content"][club["Club_Name"]] = club
+
+    returned_list = []
+    for [category, catData] in returned_data.items():
+        returned_list.append([category, catData])
+
+    # print(returned_list)
+    def compareCategoryOrder(val):
+        return val[1]["Metadata"]["Order"]
+
+    returned_list.sort(key=compareCategoryOrder)
+    # print(returned_list)
 
     return returned_data
 
@@ -227,7 +249,7 @@ def get_club_repo_list():
 def retrieve_specific_club_images(club_URL: str, image_file_name):
     '''retrieves a single image from within the club_info_pages directory, if they are available.'''
 
-    defaultLogo = "data/defaultLogo.png"
+    defaultLogo = "static_data/defaultLogo.png"
     
     try:
         for i in os.listdir("club_info_pages"):

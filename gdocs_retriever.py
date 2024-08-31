@@ -171,6 +171,8 @@ def main_function():
     # the current docs folder dict is used so that i can check if certain docs have been removed.
     # it follows the format {doc_id: { {Metadata} }}
 
+    club_categories = load_data_file("static_data/categoryInfo.json")
+
     # safely get data. Returns an empty dictionary if an error occurs
     access_data = load_data_file("data/gdocs_retriever_access_data.json")
     new_access_time_data = {}
@@ -206,7 +208,7 @@ def main_function():
             full_doc_and_imgs = docs(item['id'])
             full_doc = full_doc_and_imgs[0]["content"][1:]
             doc_images = full_doc_and_imgs[1]
-            parsed_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted)
+            parsed_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted, club_categories)
             
             print("A Google Docs retrieval was completed.\n" + "-> Doc name: " + item['name'] + "\n-> File ID: " + item['id'] + "\n-> Last modified time: " + item['modifiedTime'])
             
