@@ -403,6 +403,7 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
 
                         # handle no matching category
                         if club_data["Metadata"]["Category"].lower() not in categories:
+                            print("Invalid Category. Moving To Other Clubs.")
                             club_data["Metadata"]["Category"] = "Other Clubs"
 
                         club_discord_tag = club_data["Metadata"]["Tag"].replace("\n", "").replace(" ", "")
