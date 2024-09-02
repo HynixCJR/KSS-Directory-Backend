@@ -1,9 +1,9 @@
 {
-    "academic clubs": {
+    "academic_clubs": {
         "Order": 0,
         "Color": "#6485D8"
     },
-    "arts clubs": {
+    "arts_clubs": {
         "Order": 1,
         "Color": "#C964D8"
     },
@@ -11,11 +11,11 @@
         "Order": 2,
         "Color": "#D86464"
     },
-    "community clubs": {
+    "community_clubs": {
         "Order": 3,
         "Color": "#64D877"
     },
-    "other clubs": {
+    "other_clubs": {
         "Order": 4,
         "Color": "#D8AA64"
     }

@@ -173,15 +173,22 @@ def get_specific_club_repo_data(club_URL:str):
     #             club_repo_info = load_data_file(filepath)
     #             if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
     #                 return club_repo_info
-                
+    clubCategoryData = load_data_file("static_data/categoryInfo.json")
     clubListData = load_data_file("club_info_pages/club_list.json")
     for club in clubListData.values():
         if club["URL"] == club_URL:
             if club["Published"].lower() == "yes":
-                filepath = "club_info_pages/" + club["Category"].replace(" ", "_").lower() + "/" + club_URL +  "/" + club_URL + ".json"
+
+                clubCategory = club["Category"].replace(" ", "_").lower()
+                filepath = "club_info_pages/" + clubCategory + "/" + club_URL +  "/" + club_URL + ".json"
                 if os.path.isfile(filepath):
                     club_repo_info = load_data_file(filepath)
                     if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
+                        if clubCategory in clubCategoryData:
+                            club_repo_info["Category_Metadata"] = clubCategoryData[clubCategory]
+                        else:
+                            club_repo_info["Category_Metadata"] = clubCategoryData["other_clubs"]
+                            print("Error getting category data, requested category " + clubCategory + " was missing from the database!")
                         return club_repo_info
     
     return "none"
@@ -223,8 +230,8 @@ def get_club_repo_list_data():
                 # if "Metadata" not in returned_data[club["Category"]]:
                 #     returned_data[club["Category"]]["Metadata"] = {}
 
-                if club["Category"].lower() in clubCategoryData:
-                    returned_data[club["Category"]]["Metadata"] = clubCategoryData[club["Category"].lower()]
+                if club["Category"].replace(" ", "_").lower() in clubCategoryData:
+                    returned_data[club["Category"]]["Metadata"] = clubCategoryData[club["Category"].replace(" ", "_").lower()]
                 else: # Provide a suitable fallback
                     returned_data[club["Category"]]["Metadata"] = {"Order": 40, "Color": "#FFFFFF"}
                     print("Club " + club["Club_Name"] + " has invalid category: " + club["Category"])
@@ -277,3 +284,32 @@ def retrieve_specific_club_images(club_URL: str, image_file_name):
     except:
         traceback.print_exc()
         return defaultLogo
+    
+
+@app.get("/static_image/{image_file_path:path}", response_class=FileResponse)
+def retrieve_static_image(image_file_path : str):
+    '''retrieves a single image from within the static_data directory, if available. Relative to the static_data folder'''
+
+    defaultLogo = "static_data/defaultLogo.png"
+    
+    try:
+        filepath = "static_data/" + image_file_path
+        if os.path.isfile(filepath):
+            return filepath
+                
+        return defaultLogo
+    except:
+        traceback.print_exc()
+        return defaultLogo
+    
+@app.get("/repo_category_list")
+def get_repo_category_list():
+    '''Retrieves each club repo page's metadata including Name, Category, and URL.
+    If the club repo is set to not be published, then it won't be returned.
+    If the club repo is set to not be listed, then it will be returned, along with its listed status.'''
+    try:
+        categoryData = load_data_file("static_data/categoryInfo.json")
+        return categoryData
+    except:
+        traceback.print_exc()
+        return "none"
