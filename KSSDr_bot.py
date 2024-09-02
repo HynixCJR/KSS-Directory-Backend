@@ -6,14 +6,19 @@
 # py -3 -m pip install -U discord.py
 import discord
 
+from pathlib import Path
+
 import json
+import glob
 from dotenv import dotenv_values
 import random as r
+
+import os
 
 from FileHelper import *
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = False
+debug_mode = True
 
 # Opening the pings.json file
 pings = load_data_file("data/pings.json")
@@ -57,12 +62,12 @@ def saveClubInfo(clubPing, clubInfoType, clubInfoTypeLabel, message):
     clubInfo[clubName].update({clubInfoTypeLabel: message[len(clubPing) + len(clubInfoType) + 3:]})
 
     dump_data_file(clubInfo, "data/clubInfo.json")
-    print(clubInfo)
+    print("=====================\nClubInfo updated to\n " + str(clubInfo) + "\n=====================")
     
 
 async def difChannel(channel, msgTitle, msgDescription, embedColour):
     """Sends an embed message to the specified channel. This function must be called with an "await" in front of it."""
-    print((channel, msgTitle, msgDescription, embedColour))
+    print("-> Sent message in channel ID: " + str(channel) + " with content:\n " + str((msgTitle, msgDescription)) + "\n=====================")
     embed = discord.Embed(colour = embedColour, title = msgTitle, description = msgDescription)
     sendChannel = client.get_channel(channel)
     #await client.wait_until_ready()
@@ -89,6 +94,17 @@ async def on_message(message):
     if message.channel.id == int(env_vars_shared['anceChnl']):
         # Checks if a message was sent the announcements channel
         previousDate = formattedDate
+        if previousDate == "":
+            print("Bot started with no date. Loading latest datefile")
+            all_ance = sorted(glob.glob("announcements/*.json"))
+            lastWrittenDatefileName = Path(all_ance[-1]).stem
+
+            # sanity check
+            if os.path.isfile("announcements/" + lastWrittenDatefileName + ".json"):
+                previousDate = lastWrittenDatefileName
+                formattedDate = lastWrittenDatefileName
+            else:
+                print("Failed to load latest datefile. Either this is a bug or the directory is empty.")
         
         if message.content.startswith('**'):
             # Trigger for start of new announcement, which starts with a ** to signify the day of the week being bold.
@@ -213,7 +229,7 @@ async def on_message(message):
                 anceFile = open("announcements/" + formattedDate + ".json", "r+")
                 ance = json.loads(anceFile.read())
                 
-                ance.update({anceNum: [role_cat, role_name, anceBrief, anceDtls]})
+                ance.update({str(anceNum): [role_cat, role_name, anceBrief, anceDtls]})
 
                 anceNum += 1
 
@@ -226,10 +242,13 @@ async def on_message(message):
                 # json.dumps changes pings to str
                 anceFile.write(json.dumps(ance))
                 anceFile.flush()
-                print(ance)
+   
                 
                 # Sends confirmation message to debug channel
                 await difChannel(int(env_vars_shared['debugChnl']), "**New *Club/event/info* announcement creation successful!**", "The most recent *Club/event/info* announcement was processed successfully. ```" + message.content + "```\nFor debugging purposes, here is what the processed data looks like:\n```" + "Club/event/info name: " + role_name + "\nClub/event/info category: " + role_cat + "\n\n Brief announcement: " + anceBrief + "\nAnnouncement details: " + anceDtls + "```", int(env_vars_shared['posColour'], 16))
+                
+                print("=====================\nSaved ance with data:\n" + str(ance[str(anceNum - 1)]) + "\nTo file " + formattedDate + ".json")
+                print(ance)
 
             else:
                 # If there is no prior Date Identifier announcement to refer to
@@ -329,8 +348,8 @@ async def on_message(message):
                 # # json.dumps changes pings to str
                 # pingsFile.write(json.dumps(pings))
                 # pingsFile.flush()
-                print(pings)
                 await message.channel.send("Role ``" + newRoleName + "`` updated.")
+                print("=====================\nSaved ping with data:\n" + str(pings[newRoleID]) + "\nTo pings.json")
 
             # error messages
             elif len(message.content) > 100:
@@ -379,7 +398,7 @@ async def on_message(message):
                 # # json.dumps changes pings to str
                 # pingsFile.write(json.dumps(pings))
                 # pingsFile.flush()
-                print(pings)
+                print("=====================\nRemoved ping:\n" + str(roleRemove) + "\n frome pings.json\nFile contents are as follows:\n" + str(pings))
             except:
                 await message.channel.send("Sorry, there was an error! This might be because " + roleRemove + " doesn't exist in the database, so there is nothing to remove. :(")
         
