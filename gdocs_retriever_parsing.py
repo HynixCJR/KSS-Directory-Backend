@@ -397,19 +397,19 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
                             else:
                                 break
                         
-                        # handle missing category
-                        if club_data["Metadata"]["Category"] == "":
-                            club_data["Metadata"]["Category"] = "Other Clubs"
+                # handle missing category
+                if club_data["Metadata"]["Category"] == "":
+                    club_data["Metadata"]["Category"] = "Other Clubs"
 
-                        # handle no matching category
-                        if club_data["Metadata"]["Category"].lower() not in categories:
-                            print("Invalid Category. Moving To Other Clubs.")
-                            club_data["Metadata"]["Category"] = "Other Clubs"
+                # handle no matching category
+                if club_data["Metadata"]["Category"].replace(" ", "_").lower() not in categories:
+                    print("Invalid Category. Moving To Other Clubs.")
+                    club_data["Metadata"]["Category"] = "Other Clubs"
 
-                        club_discord_tag = club_data["Metadata"]["Tag"].replace("\n", "").replace(" ", "")
-                        club_url = club_data["Metadata"]["URL"].replace(" ", "_")
-                        club_directory_path = "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["URL"].replace(" ", "_").lower()
-            
+                club_discord_tag = club_data["Metadata"]["Tag"].replace("\n", "").replace(" ", "")
+                club_url = club_data["Metadata"]["URL"].replace(" ", "_")
+                club_directory_path = "club_info_pages/" + club_data["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_data["Metadata"]["URL"].replace(" ", "_").lower()
+    
             elif line["paragraph"]["elements"][0]["textRun"]["content"] == "Basic Info":
                 # detects when the Basic Info section is reached.
 
