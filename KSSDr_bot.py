@@ -102,7 +102,10 @@ async def on_message(message):
 
             # Getting the month
             month = ""
-            month, iterate = iterateSect(message.content, month, iterate, 1, " ")
+            try:
+                month, iterate = iterateSect(message.content, month, iterate, 1, " ")
+            except:
+                print("Error iterating month")
             month = json.loads(env_vars_shared['months']).get(month.lower())
             if month == None:
                 await difChannel(int(env_vars_shared['debugChnl']), "**Error!**", "There was an error with the message you sent!\n```" 
@@ -365,16 +368,17 @@ async def on_message(message):
 
             try:
                 pings.pop(roleRemove)
+                dump_data_file(pings, "data/pings.json")
 
-                # removes all stuff in json from 0th position
-                pingsFile.truncate(0)
+                # # removes all stuff in json from 0th position
+                # pingsFile.truncate(0)
 
-                # moves cursor back to 0th position
-                pingsFile.seek(0)
+                # # moves cursor back to 0th position
+                # pingsFile.seek(0)
 
-                # json.dumps changes pings to str
-                pingsFile.write(json.dumps(pings))
-                pingsFile.flush()
+                # # json.dumps changes pings to str
+                # pingsFile.write(json.dumps(pings))
+                # pingsFile.flush()
                 print(pings)
             except:
                 await message.channel.send("Sorry, there was an error! This might be because " + roleRemove + " doesn't exist in the database, so there is nothing to remove. :(")
