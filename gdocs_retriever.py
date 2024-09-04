@@ -292,7 +292,7 @@ def update_docs_token():
 schedule.every(12).hours.do(update_docs_token)
 
 # repeats the whole function every 20 minutes
-schedule.every(10).minutes.do(main_function)
+schedule.every(6).minutes.do(main_function)
 
 
 
