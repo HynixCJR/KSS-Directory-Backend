@@ -248,7 +248,6 @@ async def on_message(message):
                 await difChannel(int(env_vars_shared['debugChnl']), "**New *Club/event/info* announcement creation successful!**", "The most recent *Club/event/info* announcement was processed successfully. ```" + message.content + "```\nFor debugging purposes, here is what the processed data looks like:\n```" + "Club/event/info name: " + role_name + "\nClub/event/info category: " + role_cat + "\n\n Brief announcement: " + anceBrief + "\nAnnouncement details: " + anceDtls + "```", int(env_vars_shared['posColour'], 16))
                 
                 print("=====================\nSaved ance with data:\n" + str(ance[str(anceNum - 1)]) + "\nTo file " + formattedDate + ".json")
-                print(ance)
 
             else:
                 # If there is no prior Date Identifier announcement to refer to

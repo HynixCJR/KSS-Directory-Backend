@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 301.99 241.45">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: url(#linear-gradient-4);
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient-3);
+      }
+
+      .cls-4 {
+        fill: url(#linear-gradient-5);
+      }
+
+      .cls-5 {
+        fill: url(#linear-gradient-7);
+      }
+
+      .cls-6 {
+        fill: url(#linear-gradient-6);
+      }
+
+      .cls-7 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="100.82" y1="62.7" x2="226.21" y2="62.7" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#64d877" stop-opacity="0"/>
+      <stop offset="1" stop-color="#64d877"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="243.47" y1="117.71" x2="301.99" y2="117.71" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-3" x1="162.1" y1="181.82" x2="231.81" y2="181.82" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-4" y1="157.04" x2="137.43" y2="157.04" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-5" x1="0" y1="123.2" x2="88.58" y2="123.2" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-6" x1="53.19" y1="213.51" x2="109.08" y2="213.51" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-7" x1="252.32" y1="175.35" x2="283.7" y2="175.35" xlink:href="#linear-gradient"/>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer_1">
+    <g>
+      <circle class="cls-7" cx="163.52" cy="62.7" r="62.7"/>
+      <circle class="cls-1" cx="272.73" cy="117.71" r="29.26"/>
+      <circle class="cls-3" cx="196.96" cy="181.82" r="34.85"/>
+      <circle class="cls-2" cx="119.12" cy="157.04" r="18.3"/>
+      <circle class="cls-4" cx="44.29" cy="123.2" r="44.29"/>
+      <circle class="cls-6" cx="81.13" cy="213.51" r="27.94"/>
+      <circle class="cls-5" cx="268.01" cy="175.35" r="15.69"/>
+    </g>
+  </g>
+</svg>

@@ -1,22 +1,27 @@
 {
     "academic_clubs": {
         "Order": 0,
-        "Color": "#6485D8"
+        "Color": "#6485D8",
+        "Description": "A"
     },
     "arts_clubs": {
         "Order": 1,
-        "Color": "#C964D8"
+        "Color": "#C964D8",
+        "Description": "B"
     },
     "athletics": {
         "Order": 2,
-        "Color": "#D86464"
+        "Color": "#D86464",
+        "Description": "Cod"
     },
     "community_clubs": {
         "Order": 3,
-        "Color": "#64D877"
+        "Color": "#64D877",
+        "Description": "D"
     },
     "other_clubs": {
         "Order": 4,
-        "Color": "#D8AA64"
+        "Color": "#D8AA64",
+        "Description": "E"
     }
 }
