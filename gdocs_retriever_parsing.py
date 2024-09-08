@@ -4,16 +4,49 @@
 import os
 import json
 import requests
+import traceback
+from PIL import Image
 
 from FileHelper import *
 
-def retrieve_and_save_img(img_url:str, img_file_name:str, img_file_path:str):
-    '''saves an image from a link, with the given file name and path'''
-    if not os.path.exists(img_file_path):
-        os.makedirs(img_file_path)
-    img_data = requests.get(img_url).content
-    with open(img_file_path + "/" + img_file_name + ".png", 'wb') as handler:
-        handler.write(img_data)
+def retrieve_and_save_img(img_url:str, img_file_name:str, img_file_path:str, old_hash:str):
+    '''saves an image from a link, with the given file name and path, returns the current raw file hash'''
+    if not os.path.exists(img_file_path + "/raw"):
+        os.makedirs(img_file_path + "/raw")
+    
+    rawFilepath = img_file_path + "/raw/" + img_file_name + ".png"
+    optimisedFilepath = img_file_path + "/" + img_file_name + ".webp"
+    
+    print("-> Saving Image: " + str(img_file_name))
+    #print("Old Hash: " + old_hash)
+    
+    try:
+        img_data = requests.get(img_url).content
+
+        with open(rawFilepath, 'wb') as handler:
+            handler.write(img_data)
+
+        raw_file_hash = hash_file(rawFilepath)
+        #print("New Hash: " + raw_file_hash)
+
+        if old_hash != raw_file_hash:
+            if raw_file_hash != "none":
+                # Convert to webp to save bandwidth
+                with Image.open(rawFilepath) as image:
+                    image.save(optimisedFilepath)
+
+                print("Finished Saving Updated Image.")
+                return raw_file_hash
+            else:
+                print("Error saving image " + img_file_name + ". Failed hashing newly downloaded file. Something is broken.")
+        else:
+            print("Ignoring Unchanged Image.")
+    except:
+        traceback.print_exc()
+
+
+
+    return old_hash
 
 def format_dates_properly(month:str, date, year, time):
     '''Takes in a month, date, year, and time, and outputs a consistently formatted (ISO) version. I hate this so much.'''
@@ -352,7 +385,7 @@ def dump_to_json(path: str, file_name:str, content):
 
         jsonFile.flush()
 
-def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
+def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_data):
     '''the full doc scraping function'''
 
     club_discord_tag = ""
@@ -596,11 +629,19 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
                         img_uri_tag = full_doc[index + k]["table"]["tableRows"][0]["tableCells"][1]["content"][0]["paragraph"]["elements"][0]["inlineObjectElement"]["inlineObjectId"]
                         # setting the uri tag to a variable so that the following line of code is more readable
 
-                        club_data["Images"][line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower()] = "Available"
+                        image_title = line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower()
+
+                        old_hash = "none"
+                        if image_title in old_image_data:
+                            old_hash = old_image_data[image_title]["Hash"]
+
+                        file_hash = retrieve_and_save_img(doc_images[img_uri_tag], image_title, club_directory_path, old_hash)
+
                         # add a section in the dict that indicates that an image exists, which is so that the front-end knows to make another request specifically for the image
-
-                        retrieve_and_save_img(doc_images[img_uri_tag], line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower(), club_directory_path)
-
+                        if file_hash != "none":
+                            club_data["Images"][image_title] = {}
+                            club_data["Images"][image_title]["Hash"] = file_hash
+                        
             elif line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "") == "Current Executive Members":
                 # detects when the execs section has been reached.
 
@@ -693,10 +734,21 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories):
                                             if not os.path.exists(club_directory_path):
                                                 # if the folder for this club doesn't already exist, this makes a new one for it.
                                                 os.makedirs(club_directory_path)
-                                            retrieve_and_save_img(doc_images[img_uri_tag], "Event_" + str(event_label), club_directory_path)
+
+                                            image_title = "Event_" + str(event_label)
+                                            
+                                            old_hash = "none"
+                                            if image_title in old_image_data:
+                                                old_hash = old_image_data[image_title]["Hash"]
+
+                                            file_hash = retrieve_and_save_img(doc_images[img_uri_tag], image_title, club_directory_path, old_hash)
                                             # image is retrieved and saved in the correct folder.
                                             # nothing is saved to the club_data dict because the images get sent via HTTP request regardless.
-                                            club_data["Images"]["Event_" + str(event_label)] = "Available"
+
+                                            # add a section in the dict that indicates that an image exists, which is so that the front-end knows to make another request specifically for the image
+                                            if file_hash != "none":
+                                                club_data["Images"][image_title] = {}
+                                                club_data["Images"][image_title]["Hash"] = file_hash
 
                                     elif table_row["tableCells"][0]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "") == "Links":
                                         # if table row is in links section

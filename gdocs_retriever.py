@@ -174,6 +174,9 @@ def main_function():
     club_categories = load_data_file("static_data/categoryInfo.json")
 
     # safely get data. Returns an empty dictionary if an error occurs
+    club_list_data = load_data_file("club_info_pages/club_list.json")
+
+    # safely get data. Returns an empty dictionary if an error occurs
     access_data = load_data_file("data/gdocs_retriever_access_data.json")
     new_access_time_data = {}
 
@@ -208,7 +211,13 @@ def main_function():
             full_doc_and_imgs = docs(item['id'])
             full_doc = full_doc_and_imgs[0]["content"][1:]
             doc_images = full_doc_and_imgs[1]
-            parsed_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted, club_categories)
+            old_image_data = {}
+
+            if item['id'] in club_list_data and access_data["force_gdocs_refresh"] != True:
+                if "Images" in club_list_data[item['id']]:
+                    old_image_data = club_list_data[item['id']]["Images"]
+
+            parsed_docs[item['id']] = scrape_doc(full_doc, doc_images, document_modified_time_formatted, club_categories, old_image_data)
             
             print("A Google Docs retrieval was completed.\n" + "-> Doc name: " + item['name'] + "\n-> File ID: " + item['id'] + "\n-> Last modified time: " + item['modifiedTime'])
             
@@ -216,10 +225,6 @@ def main_function():
 
         present_doc_ids.append(item["id"])
         new_access_time_data[item["name"]] = document_modified_time_formatted
-
-
-    # safely get data. Returns an empty dictionary if an error occurs
-    club_list_data = load_data_file("club_info_pages/club_list.json")
 
     # Update ping associations with data from parsed files
     for doc_id, parsed_doc in parsed_docs.items():

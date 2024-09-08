@@ -1,4 +1,5 @@
 import os
+import hashlib
 import json
 
 def load_data_file(filepath):
@@ -34,6 +35,25 @@ def dump_data_file(data, filepath):
 
     # atomically (I hope??) replace target file
     os.replace(filepath + ".temp", filepath)
+
+def hash_file(filepath):
+    '''Safely hash a file. Returns the string 'none' if an error occurs'''
+
+    if os.path.isfile(filepath):
+        try:
+            hash_md5 = hashlib.md5()
+            with open(filepath, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()
+        except:
+            print("Error loading file: " + filepath)
+    else:
+        print("Error loading file: " + filepath)
+
+    return "none"
+
+
 
 def dump_data_file_old(data, path, filename):
     # make sure path exists

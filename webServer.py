@@ -248,7 +248,7 @@ def get_club_repo_list_data():
         return val[1]["Metadata"]["Order"]
 
     returned_list.sort(key=compareCategoryOrder)
-    print(returned_list)
+    #print(returned_list)
 
     return returned_list
     
@@ -265,7 +265,7 @@ def get_club_repo_list():
         return "none"
 
 @app.get("/specific_club_images/{club_URL}/{image_file_name}", response_class=FileResponse)
-def retrieve_specific_club_images(club_URL: str, image_file_name):
+def retrieve_specific_club_images(club_URL: str, image_file_name : str, hash : str = None):
     '''retrieves a single image from within the club_info_pages directory, if they are available.'''
 
     defaultLogo = "static_data/defaultLogo.png"
@@ -277,7 +277,7 @@ def retrieve_specific_club_images(club_URL: str, image_file_name):
                 if os.path.isfile(filepath):
                     club_repo_info = load_data_file(filepath)
                     if club_repo_info["Metadata"]["Published"].lower() == "yes" and club_repo_info["Metadata"]["URL"] == club_URL:
-                        image_filepath = "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["URL"].replace(" ", "_").lower() + "/" + image_file_name + ".png";
+                        image_filepath = "club_info_pages/" + club_repo_info["Metadata"]["Category"].replace(" ", "_").lower() + "/" + club_repo_info["Metadata"]["URL"].replace(" ", "_").lower() + "/" + image_file_name + ".webp";
                         if os.path.isfile(image_filepath):
                             return image_filepath;
         return defaultLogo
