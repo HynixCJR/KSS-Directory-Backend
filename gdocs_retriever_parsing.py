@@ -385,12 +385,24 @@ def dump_to_json(path: str, file_name:str, content):
 
         jsonFile.flush()
 
+
+def parse_stupid_text(elementArray):
+    '''For some reason some textruns are separated into different elements??? Why.'''
+    
+    outputString = ""
+    for element in elementArray:
+        outputString += element["textRun"]["content"]
+
+    return outputString
+
 def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_data):
     '''the full doc scraping function'''
 
     club_discord_tag = ""
     club_directory_path = ""
     club_url = ""
+
+    # dump_data_file(full_doc, "crap.json")
 
     club_data = {}
 
@@ -506,10 +518,8 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
                 for k in range(10):
                     if "table" in full_doc[index + k]:
                         # detects if line is a table
-                        
                         for table_row_index, table_row in enumerate(full_doc[index + k]["table"]["tableRows"]):
                             # iterate through each row in the table
-
                             if table_row["tableCells"][0]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "") != "Meeting title":
                                 # if table row is the header area, don't do anything with it.
 
@@ -520,9 +530,11 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
                                 meeting_day = table_row["tableCells"][1]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower().replace(" ", "")
                                 meeting_start_time_unverified = table_row["tableCells"][2]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower().replace(" ", "")
                                 meeting_end_time_unverified = table_row["tableCells"][3]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "").lower().replace(" ", "")
-                                meeting_location = table_row["tableCells"][4]["content"][0]["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "")
+                                meeting_location = parse_stupid_text(table_row["tableCells"][4]["content"][0]["paragraph"]["elements"]).replace("\n", "")
                                 
-                                if meeting_day in days_of_the_week and len(meeting_start_time_unverified) > 5 and len(meeting_location) > 5:
+
+                                
+                                if meeting_day in days_of_the_week and len(meeting_start_time_unverified) > 5 and len(meeting_location) > 1:
                                     # checking if there's anything actually in the required fields
 
                                     def meeting_time_check(time):
@@ -584,7 +596,7 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
                                                 club_meeting["Meeting_End_Time"] = meeting_end_time
                                         
                                         club_meeting["Meeting_Location"] = meeting_location
-
+ 
                                         club_data["Meeting_Times"][table_row_index] = club_meeting
                         
             elif line["paragraph"]["elements"][0]["textRun"]["content"].replace("\n", "") == "Links":

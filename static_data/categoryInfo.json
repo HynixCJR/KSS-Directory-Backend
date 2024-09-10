@@ -2,12 +2,12 @@
     "academic_clubs": {
         "Order": 0,
         "Color": "#6485D8",
-        "Description": "All of KSS's academic clubs, from Business to Coding & Health Sciences."
+        "Description": "All of KSS's academic clubs, from Business to Math & Health Sciences."
     },
     "arts_clubs": {
         "Order": 1,
         "Color": "#C964D8",
-        "Description": "Arts ajacent clubs."
+        "Description": "Arts adjacent clubs."
     },
     "athletics": {
         "Order": 2,
@@ -22,6 +22,6 @@
     "other_clubs": {
         "Order": 4,
         "Color": "#D8AA64",
-        "Description": "Miscellaneous clubs that don't fall under any other category."
+        "Description": "Miscellaneous clubs / groups that don't fall under any other category."
     }
 }
