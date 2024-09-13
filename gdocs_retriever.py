@@ -64,7 +64,7 @@ def docs(doc_id):
         print(err)
 
 def main_function():
-    '''the main function of the gdocs retriever, which is set to run every 20 minutes.'''
+    '''the main function of the gdocs retriever, which is set to run every 8 minutes.'''
 
     # If modifying these scopes, delete the file token.json.
     SCOPES_drive = ['https://www.googleapis.com/auth/drive.metadata.readonly']

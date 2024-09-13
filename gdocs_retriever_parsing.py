@@ -439,6 +439,8 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
                                 club_data["Metadata"]["Listed"] = table_row_second_cell
                             elif table_row_first_cell == "published":
                                 club_data["Metadata"]["Published"] = table_row_second_cell
+                            elif table_row_first_cell == "claimed":
+                                club_data["Metadata"]["Claimed"] = table_row_second_cell
                             else:
                                 break
                         
