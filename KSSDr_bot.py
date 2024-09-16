@@ -18,7 +18,7 @@ import os
 from FileHelper import *
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = False
+debug_mode = True
 
 # Opening the pings.json file
 pings = load_data_file("data/pings.json")
@@ -103,12 +103,13 @@ async def on_message(message):
             if os.path.isfile("announcements/" + lastWrittenDatefileName + ".json"):
                 previousDate = lastWrittenDatefileName
                 formattedDate = lastWrittenDatefileName
+                print("Loaded date: " + lastWrittenDatefileName)
             else:
                 print("Failed to load latest datefile. Either this is a bug or the directory is empty.")
         
         if message.content.startswith('**'):
             # Trigger for start of new announcement, which starts with a ** to signify the day of the week being bold.
-
+            oldAnceNum = anceNum
             anceNum = 1
             iterate = 2
             
@@ -155,8 +156,24 @@ async def on_message(message):
             # Getting the year
             # It's easier to not use the iterateSect function here
             year = ""
-            for i in range(iterate, len(message.content)-2):
-                year += message.content[i]
+            for i in range(iterate, len(message.content) - 1):
+                if message.content[i] == "*":
+                    break
+                else:
+                    year += message.content[i]
+
+            # iterate should point to somewhere on final line of a valid date entry
+            # just check if there are more
+            for i in range(iterate, len(message.content) - 2):
+                if message.content[i] == "\n":
+                    await difChannel(int(env_vars_shared['debugChnl']), "**Error!**", "There was an error with the message you sent!\n```" + message.content + "```\nThere was additional content after the date identifier, and so the message you sent has been deleted.", int(env_vars_shared['negColour']))
+
+                    # Deleting the message and resetting the formattedDate to the previousDate.
+                    await message.delete()
+
+                    # restore old state
+                    anceNum = oldAnceNum
+                    return # give up
             
             # Making the date info into a dictionary
             dateInfo = {
@@ -166,6 +183,11 @@ async def on_message(message):
             # Formatting the year, month and date into ISO format, which is better for file organization
             formattedDate = year + month + date
 
+            # oh god why is it like this
+            # the VALID case is when we ERROR
+            # it doesn't check the file's existance, it just tries to create it and errors when it can't
+            # it's SUCCESSFUL when it errors
+            # whyyyyyyyyyy
             try:
                 # Checking if the announcement file for the specified date exists
                 anceData = open("announcements//" + formattedDate + ".json", "r+")
@@ -177,7 +199,7 @@ async def on_message(message):
                 await message.delete()
                 formattedDate = previousDate
 
-            except:
+            except: #### THIS IS SUPPOSED TO BE FOR ERROR HANDLING DAMMIT #### [Inconceivable Rage] ####
                 # If there are no issues, then proceed.
 
                 # This is just for debugging, which I am keeping because it is useful to see in the console
@@ -210,22 +232,51 @@ async def on_message(message):
                     await difChannel(int(env_vars_shared['debugChnl']), "**Role does not have assigned category!**", '**The role you mentioned, ' + role_id + ', does not have an assigned tag. It has been assigned a "miscellaneous" tag for the time being. You can change it in ' + str(env_vars_shared['rolesChnl']), int(env_vars_shared['midColour']))
                     role_id = role_id.replace("<@&", "")
                     role_id = role_id.replace(">", "")
-                    role_name = discord.utils.get(message.guild.roles, id = int(role_id)).name
+
+                    try:
+                        role_name = discord.utils.get(message.guild.roles, id = int(role_id)).name
+                    except:
+                        await difChannel(int(env_vars_shared['debugChnl']), "**There was an errror with the message you sent!**", '```The role you mentioned, ' + role_id + ', is not valid. Check your formatting (there might be a missing space after the role)```', int(env_vars_shared['negColour']))
+                        await message.delete()
+
+                        return
                     role_cat = "Miscellaneous"
 
+                # handle extra whitespace
+                while message.content[iterate] == "*" or message.content[iterate] == " ":
+                    iterate += 1
+                
                 anceBrief = ""
                 while True:
+                    if iterate > len(message.content) - 1:
+                        await difChannel(int(env_vars_shared['debugChnl']), "**Error!", "There was an error with the message you sent!\n```" + message.content + "```\nUnable to read announcement title, did you format something incorrectly?", int(env_vars_shared['negColour']))
+                        await message.delete()
+
+                        return
                     if message.content[iterate] != "*":
                         anceBrief += message.content[iterate]
                         iterate += 1
                     else:
-                        iterate += 6
+                        try:
+                            iterate = message.content.index("\n", iterate) + 1
+                        except:
+                            await difChannel(int(env_vars_shared['debugChnl']), "**Error!", "There was an error with the message you sent!\n```" + message.content + "```\nUnable to read announcement description, did you format something incorrectly?", int(env_vars_shared['negColour']))
+                            await message.delete()
+
+                            return
                         break
                 
-                anceDtls = ""
-                for i in range(iterate, len(message.content)-1):
-                    anceDtls += message.content[i]
+                print(message.content)
+                anceBrief = anceBrief.strip()
                 
+                anceDtls = ""
+                for i in range(iterate, len(message.content)):
+                    anceDtls += message.content[i]
+                anceDtls = anceDtls.strip(">") # Strip special characters
+                anceDtls = anceDtls.replace("*", "")
+                anceDtls = anceDtls.strip() # strip trailing whitespace
+
+
                 anceFile = open("announcements/" + formattedDate + ".json", "r+")
                 ance = json.loads(anceFile.read())
                 
@@ -245,7 +296,7 @@ async def on_message(message):
    
                 
                 # Sends confirmation message to debug channel
-                await difChannel(int(env_vars_shared['debugChnl']), "**New *Club/event/info* announcement creation successful!**", "The most recent *Club/event/info* announcement was processed successfully. ```" + message.content + "```\nFor debugging purposes, here is what the processed data looks like:\n```" + "Club/event/info name: " + role_name + "\nClub/event/info category: " + role_cat + "\n\n Brief announcement: " + anceBrief + "\nAnnouncement details: " + anceDtls + "```", int(env_vars_shared['posColour'], 16))
+                await difChannel(int(env_vars_shared['debugChnl']), "**New *Club/event/info* announcement creation successful!**", "The most recent *Club/event/info* announcement was processed successfully. ```" + message.content + "```\nFor debugging purposes, here is what the processed data looks like:\n```" + "Club/event/info name: " + role_name + "\nClub/event/info category: " + role_cat + "\n\nBrief announcement: " + anceBrief + "\nAnnouncement details: " + anceDtls + "```", int(env_vars_shared['posColour'], 16))
                 
                 print("=====================\nSaved ance with data:\n" + str(ance[str(anceNum - 1)]) + "\nTo file " + formattedDate + ".json")
 
