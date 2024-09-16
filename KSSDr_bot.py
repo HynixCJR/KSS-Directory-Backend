@@ -18,7 +18,7 @@ import os
 from FileHelper import *
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = True
+debug_mode = False
 
 # Opening the pings.json file
 pings = load_data_file("data/pings.json")
