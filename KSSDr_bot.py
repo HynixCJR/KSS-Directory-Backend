@@ -260,10 +260,11 @@ async def on_message(message):
                         try:
                             iterate = message.content.index("\n", iterate) + 1
                         except:
-                            await difChannel(int(env_vars_shared['debugChnl']), "**Error!", "There was an error with the message you sent!\n```" + message.content + "```\nUnable to read announcement description, did you format something incorrectly?", int(env_vars_shared['negColour']))
-                            await message.delete()
+                            iterate = len(message.content)
+                            # await difChannel(int(env_vars_shared['debugChnl']), "**Error!", "There was an error with the message you sent!\n```" + message.content + "```\nUnable to read announcement description, did you format something incorrectly?", int(env_vars_shared['negColour']))
+                            # await message.delete()
 
-                            return
+                            # return
                         break
                 
                 print(message.content)
