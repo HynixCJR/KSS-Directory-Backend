@@ -798,5 +798,6 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
     club_listing = {}
     club_listing = club_data["Metadata"]
     club_listing["Images"] = club_data["Images"]
+    club_listing["Activity"] = club_data["Basic_Info"]["Activity"]
 
     return club_listing
