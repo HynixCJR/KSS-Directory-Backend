@@ -581,7 +581,7 @@ def scrape_doc(full_doc, doc_images, doc_modified_time, categories, old_image_da
                                     else:
                                         club_meeting = {}
 
-                                        if len(meeting_title) > 5:
+                                        if len(meeting_title) > 1:
                                             # meeting title
                                             club_meeting["Meeting_Title"] = meeting_title
                                         
