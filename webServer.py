@@ -313,3 +313,12 @@ def get_repo_category_list():
     except:
         traceback.print_exc()
         return "none"
+    
+@app.get("/testing")
+def get_testing():
+    try:
+        categoryData = load_data_file("static_data/ExampleMenu.json")
+        return categoryData
+    except:
+        traceback.print_exc()
+        return "none"
