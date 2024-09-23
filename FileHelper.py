@@ -53,7 +53,8 @@ def hash_file(filepath):
 
     return "none"
 
-
+def json_to_formatted_string(jsonData):
+    return json.dumps(jsonData, indent=3)
 
 def dump_data_file_old(data, path, filename):
     # make sure path exists

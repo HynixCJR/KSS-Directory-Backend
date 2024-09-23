@@ -1,0 +1,445 @@
+{
+    "formId": "1zUo5VsquA9UjJ2pBCJC0O3D2GAp5fQA9Oks92r2BXPU",
+    "info": {
+        "title": "Cafeteria Data",
+        "description": "To be filled out by maintainers weekly",
+        "documentTitle": "Cafeteria Data"
+    },
+    "settings": {},
+    "revisionId": "00000067",
+    "responderUri": "https://docs.google.com/forms/d/e/1FAIpQLSeC6jX-0BYsTWHkb8n9d-YOLXppTyyjczhy-tcwM_wlLAWkqg/viewform",
+    "items": [
+        {
+            "itemId": "73fc8e0c",
+            "textItem": {},
+            "title": "Menu Item #1"
+        },
+        {
+            "itemId": "7b672de7",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "39ce31c4",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "45597cc5",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "2f718459",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "423fd3cf",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "2cc1ee4c",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "67e130a4",
+            "pageBreakItem": {},
+            "title": "Menu Item #2"
+        },
+        {
+            "itemId": "43055008",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "767853ce",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "15ab0209",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "52fa77cd",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "314f53e4",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "207e15d4",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "799d2691",
+            "pageBreakItem": {},
+            "title": "Menu Item #3"
+        },
+        {
+            "itemId": "56c5a412",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "663d54ca",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "0a3f317f",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "554391b9",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "37e28d89",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "0266245b",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "00dc6575",
+            "pageBreakItem": {},
+            "title": "Menu Item #4"
+        },
+        {
+            "itemId": "635a3e6a",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "5904d1d0",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "04caef70",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "522d6b57",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "4608c5ab",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "7af4d593",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "6fb167ae",
+            "pageBreakItem": {},
+            "title": "Menu Item #5"
+        },
+        {
+            "itemId": "76ada89b",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "4eb7d75d",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "2e5b3273",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "16ce54c0",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "4c8ac3ab",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "58c67d8d",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "331c75a3",
+            "pageBreakItem": {},
+            "title": "Menu Item #6"
+        },
+        {
+            "itemId": "31095388",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "53cf6b00",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "172df6b6",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "6258bb83",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "7b0d3ad4",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "376e53cd",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "40edacd5",
+            "pageBreakItem": {},
+            "title": "Menu Item #7"
+        },
+        {
+            "itemId": "0894edb8",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "2291f6f7",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "0532fd25",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "51ff6d53",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "693f6194",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "7ed2cbfe",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "itemId": "516b5d51",
+            "pageBreakItem": {},
+            "title": "Menu Item #8"
+        },
+        {
+            "itemId": "5b5cabba",
+            "title": "Item Title",
+            "questionItem": {
+                "question": {
+                    "questionId": "23743481",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "3ef5574a",
+            "title": "Price",
+            "questionItem": {
+                "question": {
+                    "questionId": "38c28708",
+                    "textQuestion": {}
+                }
+            }
+        },
+        {
+            "itemId": "19048967",
+            "title": "Day",
+            "questionItem": {
+                "question": {
+                    "questionId": "0245909f",
+                    "choiceQuestion": {
+                        "type": "CHECKBOX",
+                        "options": [
+                            {
+                                "value": "Monday"
+                            },
+                            {
+                                "value": "Tuesday"
+                            },
+                            {
+                                "value": "Wednesday"
+                            },
+                            {
+                                "value": "Thursday"
+                            },
+                            {
+                                "value": "Friday"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

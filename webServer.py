@@ -94,6 +94,7 @@ def anceTotal(year: str, month: str):
     return ances
 
 def formatClubRepoAsInfo(club_URL):
+    '''Formats club repo data for display in announcement popups'''
     repoData = get_specific_club_repo_data(club_URL)
     if repoData == "none":
         return "none"
@@ -107,11 +108,34 @@ def formatClubRepoAsInfo(club_URL):
     if links != []:
         clubInfo["Socials"] = links
 
-    supervisors = []
-    for supervisorID, supervisorData in repoData["Basic_Info"]["Supervisors"].items():
-        supervisors.append(supervisorData)
-    if supervisors != []:
-        clubInfo["Supervisor(s)"] = supervisors
+    if repoData["Basic_Info"]["Supervisors"] != "Unspecified":
+        supervisors = []
+        for supervisorID, supervisorData in repoData["Basic_Info"]["Supervisors"].items():
+            supervisors.append(supervisorData)
+        if supervisors != []:
+            clubInfo["Supervisor(s)"] = ", ".join(supervisors)
+
+    locations_unprocessed = []
+    meeting_days_unprocessed = []
+    for meeting in repoData["Meeting_Times"].values():
+        #print(meeting)
+        locations_unprocessed.append(meeting["Meeting_Location"])
+        meeting_days_unprocessed.append(meeting["Meeting_Day"]);
+    
+    locations_out = []
+    locations_set = set()
+    for location in locations_unprocessed:
+        if location.lower() not in locations_set:
+            locations_set.add(location.lower())
+            locations_out.append(location)
+    clubInfo["Location"] = ", ".join(locations_out)
+
+    if len(meeting_days_unprocessed) > 0:
+        meeting_time_date_string = ", ".join(meeting_days_unprocessed)
+        clubInfo["Meeting times/dates"] = meeting_time_date_string.title()
+
+
+    clubInfo["Club_Repo_URL"] = repoData["Metadata"]["URL"]
 
     return clubInfo
     
@@ -147,12 +171,14 @@ def getClubInfo(club: str):
                 break
 
         # Check if we have a club repo entry, if we do, overwrite clubInfoProcessed
-        # for categoryName, category in get_club_repo_list_data().items():
-        #     for clubName, clubData in category.items():
-        #         print(clubData["Tag"])
-        #         if clubData["Tag"] == pingID:
-        #             clubInfoProcessed = formatClubRepoAsInfo(clubData["URL"])
-        #             break
+        for category in get_club_repo_list_data():
+            for clubName, clubData in category["Content"].items():
+                # print(clubData["Tag"])
+                if clubData["Tag"] == pingID and clubData["Published"] == "Yes":
+                    clubInfoProcessed = formatClubRepoAsInfo(clubData["URL"])
+                    print("> Overriding club data for club \"" + club.replace("$", " ") + "\" with club repo data.")
+                    break
+        
         
         clubInfoProcessed["Colour"] = clubColour
 
@@ -241,11 +267,11 @@ def get_club_repo_list_data():
 
     returned_list = []
     for [category, catData] in returned_data.items():
-        returned_list.append([category, catData])
+        returned_list.append({"Category Name": category, "Metadata":catData["Metadata"], "Content":catData["Content"]})
 
     # print(returned_list)
     def compareCategoryOrder(val):
-        return val[1]["Metadata"]["Order"]
+        return val["Metadata"]["Order"]
 
     returned_list.sort(key=compareCategoryOrder)
     #print(returned_list)
@@ -314,11 +340,13 @@ def get_repo_category_list():
         traceback.print_exc()
         return "none"
     
-@app.get("/testing")
+@app.get("/cafeteria_menu")
 def get_testing():
     try:
-        categoryData = load_data_file("static_data/ExampleMenu.json")
-        return categoryData
+        cafeteriaData = load_data_file("data/gforms_output_data.json")
+        if cafeteriaData["cafeteria_data"] == {}:
+            return "none"
+        return cafeteriaData["cafeteria_data"]
     except:
         traceback.print_exc()
         return "none"
