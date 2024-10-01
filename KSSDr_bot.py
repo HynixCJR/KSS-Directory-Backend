@@ -453,6 +453,13 @@ async def on_message(message):
             except:
                 await message.channel.send("Sorry, there was an error! This might be because " + roleRemove + " doesn't exist in the database, so there is nothing to remove. :(")
         
+        # Clear caf menu from website
+        elif message.content.startswith('.clear cafmenu'):
+            data = load_data_file("data/gforms_output_data.json")
+            data["cafeteria_data"] = []
+            dump_data_file(data, "data/gforms_output_data.json")
+            await difChannel(int(env_vars_shared['rolesChnl']), "Success!", "Cleared cafeteria menu file!", int(env_vars_shared['posColour']))
+
         elif message.content.startswith('.club info'):
             # Returns the stored club info.
 

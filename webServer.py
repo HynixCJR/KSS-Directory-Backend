@@ -57,6 +57,7 @@ class openAnce():
                             ance[key].append(clubColourData[value[1]])
                         else:
                             ance[key].append("none")
+
                 #print(ance)
 
                 ances.update({len(all_ance) - i: ance})
@@ -69,7 +70,64 @@ class openAnce():
             else:
                 ances.update({"Last": False})
             return ances
+        
+    def batchAnceNew(num, index):
+        outputData = {}
+        outputData["announcements"] = []
+        all_announcements = sorted(glob.glob("announcements/*.json"))
+        clubColourDataRaw = load_data_file("data/pings.json")
 
+        for i in range(len(all_announcements) - num * (index), 0, -1):
+            if len(outputData["announcements"]) == num:
+                break
+            else:
+                with open(all_announcements[i-1], "r", encoding='utf-8') as anceData:
+                    anceRaw = json.loads(anceData.read())
+
+                    anceProcessedList = []
+                    dateData = []
+                    for key, value in anceRaw.items():
+                        if key != "0":
+                            category = value[0]
+                            roleName = value[1]
+                            anceTitle = value[2]
+                            description = value[3]
+                            clubColor = "266"
+
+                            clubPingKey = ""
+                            for pingKey, pingDataValue in clubColourDataRaw.items():
+                                if pingDataValue[0] == roleName:
+                                    clubColor = pingDataValue[2]
+                                    clubPingKey = pingKey
+                                    break
+
+                            processedAnce = {}
+                            processedAnce["category"] = category
+                            processedAnce["roleName"] = roleName
+                            processedAnce["anceTitle"] = anceTitle
+                            processedAnce["description"] = description
+                            processedAnce["clubColor"] = clubColor
+                            processedAnce["clubPingKey"] = clubPingKey
+
+                            anceProcessedList.append(processedAnce)
+                        else:
+                            dateData = value
+                    # append day to list
+                    outputData["announcements"].append({"date": dateData, "announcementData": anceProcessedList})
+
+                
+
+
+                
+
+        if len(outputData) == 0:
+            return "none"
+        else:
+            if len(all_announcements) - num * (index + 1) <= 0:
+                outputData.update({"Last": True})
+            else:
+                outputData.update({"Last": False})
+            return outputData
 # HTTP get request for an announcement JSON file at specified date
 @app.get("/ance/date/{date}")
 def getAnce(date: str):
@@ -80,6 +138,34 @@ def getAnce(date: str):
 def getAnceBatch(num: int, index: int):
     # takes in index with start point of 0
     return openAnce.batch(num, index)
+
+# HTTP request for a batch of JSON files at a specified index.
+# Only returns announcements matching the tag
+@app.get("/ance/batch/{num}/{index}/{clubTag}")
+def getAnceBatchSpecificCLub(num: int, index: int, clubTag: str):
+    # takes in index with start point of 0
+    data = openAnce.batchAnceNew(num, index)
+    #print(clubTag)
+
+    newDayList = []
+    for day in data["announcements"]:
+        newDayAnces = []
+
+        for ance in day["announcementData"]:
+            if ance["clubPingKey"] == clubTag:
+                #print(ance["clubPingKey"])
+                newDayAnces.append(ance)
+        
+        if len(newDayAnces) > 0:
+            newDay = day
+            newDay["announcementData"] = newDayAnces
+            newDayList.append(newDay)
+
+    if not len(newDayList) > 0:
+        return "none"
+
+    data["announcements"] = newDayList
+    return data
 
 
 @app.get("/anceTotal/{year}/{month}")
