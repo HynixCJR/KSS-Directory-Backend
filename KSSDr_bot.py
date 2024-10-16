@@ -349,7 +349,7 @@ async def on_message(message):
                 for i in range(iterate, len(message.content)):
                     newRoleSect += message.content[i]
                 
-                clubCatFile = open("clubCategoryInfo.json", "r+")
+                clubCatFile = open("data/clubCategoryInfo.json", "r+")
                 clubCatInfo = json.loads(clubCatFile.read())
 
                 # Sets clubCatColours to a list with all the category 
