@@ -11,14 +11,16 @@ from pathlib import Path
 import json
 import glob
 from dotenv import dotenv_values
+from datetime import datetime
 import random as r
 
 import os
 
 from FileHelper import *
+import pytz
 
 # Enable debug mode (Uses seperate bot in testing server)
-debug_mode = False
+debug_mode = True
 
 # Opening the pings.json file
 pings = load_data_file("data/pings.json")
@@ -31,12 +33,15 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+
 # Load existing variables from the .env.shared file
 env_vars_shared = dotenv_values('.env.shared.debug' if debug_mode else '.env.shared')
 
 # global variables
 formattedDate = ""
 """The final date in ISO 8601 format for better file organization"""
+previousDate = ""
+
 anceNum = 1
 """The number of announcements sent so far, excluding the date identifier."""
 
@@ -81,31 +86,38 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
 
 
+def load_latest_date():
+    global formattedDate, previousDate
+
+    if formattedDate == "":
+        print("Bot started with no date. Loading latest datefile")
+        all_ance = sorted(glob.glob("announcements/*.json"))
+        lastWrittenDatefileName = Path(all_ance[-1]).stem
+
+        # sanity check
+        if os.path.isfile("announcements/" + lastWrittenDatefileName + ".json"):
+            previousDate = lastWrittenDatefileName
+            formattedDate = lastWrittenDatefileName
+            print("Loaded date: " + lastWrittenDatefileName)
+        else:
+            print("Failed to load latest datefile. Either this is a bug or the directory is empty.")
+
 @client.event
 async def on_message(message):
     """This function activates if a new message is sent."""
 
     print("New message in channel with ID " + str(message.channel.id))
 
-    global formattedDate, anceNum
+    global formattedDate, anceNum, previousDate
+
     if message.author == client.user:
         return
 
     if message.channel.id == int(env_vars_shared['anceChnl']):
-        # Checks if a message was sent the announcements channel
         previousDate = formattedDate
-        if previousDate == "":
-            print("Bot started with no date. Loading latest datefile")
-            all_ance = sorted(glob.glob("announcements/*.json"))
-            lastWrittenDatefileName = Path(all_ance[-1]).stem
+        load_latest_date()
+        # Checks if a message was sent the announcements channel
 
-            # sanity check
-            if os.path.isfile("announcements/" + lastWrittenDatefileName + ".json"):
-                previousDate = lastWrittenDatefileName
-                formattedDate = lastWrittenDatefileName
-                print("Loaded date: " + lastWrittenDatefileName)
-            else:
-                print("Failed to load latest datefile. Either this is a bug or the directory is empty.")
         
         if message.content.startswith('**'):
             # Trigger for start of new announcement, which starts with a ** to signify the day of the week being bold.
@@ -277,6 +289,12 @@ async def on_message(message):
                 anceDtls = anceDtls.replace("*", "")
                 anceDtls = anceDtls.strip() # strip trailing whitespace
 
+                # Error if last date identifier does not match today's date
+                todayDateID = datetime.now(pytz.timezone('EST')).strftime('%Y%m%d')
+                if formattedDate != todayDateID:
+                    sendChannel = client.get_channel(int(env_vars_shared['debugChnl']))
+                    await sendChannel.send("<@" + str(message.author.id) + "> **Warning!**")
+                    await difChannel(int(env_vars_shared['debugChnl']), "**The latest date identifier ``" + str(formattedDate) + "`` does not match today's date identifier of ``" + str(todayDateID) + "``**", "Message content is as follows:\n```" + str(message.content) + "```\nThe announcement still went through, but this may be a mistake, check that you've posted a valid and correct date identifier. If you forgot the date identifier, delete the latest message on discord, as well as with ``.ance purge latest`` to clear it from the database, and start over.", int(env_vars_shared['negColour']))
 
                 anceFile = open("announcements/" + formattedDate + ".json", "r+")
                 ance = json.loads(anceFile.read())
@@ -513,6 +531,42 @@ async def on_message(message):
             await message.channel.send("Full announcements are comprised of two parts: a **Date Identifier**, and the actual **club/event** announcements.\nThe date identifier tells users of the Discord server, as well as this bot, what date your announcement is.\n\nIt must follow this format:\n```\n**{day of the week}**\n\n**{month} {date} {year}**\n```\n\nFor example, here is a properly formatted Date Identifier.\n```\n**SUNDAY**\n\n**July 23rd 2023**```\n\nWhich produces the following:\n\n**SUNDAY**\n\n**July 23rd 2023**\n\n*Note that you MUST include the 'rd', 'st', or 'th' after the date.\nMake sure to not include any spaces or characters other than those that are needed!")
             await message.channel.send("...\nClub/event announcements are the actual announcements for KSS clubs and events.\nTo send one of them, you must first initialize the announcements for the day with a Date Identifier. The announcements that follow will then be linked to that date.\n\nThese announcements follow this specific format:\n```\n@{ping} **{announcement brief}**\n*{announcement details}*``` \n Note that this will not work without each of the parts enclosed in {}.\n\nFor example, here is a properly formatted club/event announcement:\n\n```\n@graphic design **Graphic Design Club meeting today at lunch in room 228**\n> *KSDC winners announced, raffle.*\n```\n\nWhich produces the following:\n\n<@&1038542186284859452> **Graphic Design Club meeting today at lunch in room 228**\n> *KSDC winners announced, raffle.*\n\nFor the bot to recognize the message you sent, please make sure that you only have one space after the ping, and one after the >. Also, please make sure you bold/italicize the announcements as shown!")
             await message.channel.send("...\nThe website also assigns new names and categories for each role. You can assign these roles in #temp-roles. Assigning them follows this format:\n\n```\n@{role} {role name}, {role category}\n```\n\nFor example...\n\n```@graphic design Graphic Design Club, Clubs```\n\nproduces the following message:\n\n<@&1038542186284859452> Graphic Design Club, Clubs\n\nThis assigns the name of Graphic Design Club to <@&1038542186284859452>, and puts it in the Clubs category. If you don't do this, the announcements you send will be grouped under the miscellaneous category, and the club/event name will just be the name of the ping.")
+        
+        elif message.content.startswith('.ance purge latest'):
+            load_latest_date()
+
+            if not os.path.isfile("announcements/" + formattedDate + ".json"):
+                #print("wtf")
+                await difChannel(int(env_vars_shared['debugChnl']), "Uh oh!", "Internal bot error while trying to complete request.\ndateFile for " + formattedDate +".json does not exist.", int(env_vars_shared['negColour']))
+                return
+            
+            data = load_data_file("announcements/" + formattedDate + ".json")
+            
+            latestAnceNum = 0
+            for anceNum, anceData in data.items():
+                if int(anceNum) > latestAnceNum:
+                    latestAnceNum = int(anceNum)
+            
+            if latestAnceNum > 0:
+                # implicit types are annoying
+                latestAnceNum = str(latestAnceNum)
+
+                print("Purging ance # " + latestAnceNum + " from file " + formattedDate + ".json")
+                print("Ance content is as follows " + str(data[latestAnceNum]))
+
+                data.pop(latestAnceNum)
+                dump_data_file(data, "announcements/" + formattedDate + ".json")
+
+
+                await difChannel(int(env_vars_shared['debugChnl']), "Success!", "Purged latest announcement from the website database!", int(env_vars_shared['posColour']))
+            else:
+                print("Purging file " + formattedDate + ".json from database")
+                os.remove("announcements/" + formattedDate + ".json")
+
+                formattedDate = ""
+                anceNum = 1
+                load_latest_date()
+                await difChannel(int(env_vars_shared['debugChnl']), "Success!", "Date file was empty, deleting datefile.", int(env_vars_shared['posColour']))
 
 
 # Client ID of Discord bot
